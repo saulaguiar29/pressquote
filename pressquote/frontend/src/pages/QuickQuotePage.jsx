@@ -1,0 +1,454 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../utils/api';
+import { Zap, ChevronRight, ChevronLeft, Calculator, User, Package, Search, X, AlertCircle } from 'lucide-react';
+
+const PAPER_OPTIONS = [
+  '100lb Gloss Cover', '80lb Gloss Text', '60lb Uncoated Offset',
+  '14pt Coated One Side', '80lb Matte Cover', 'Vinyl',
+  'Custom / Other',
+];
+const FINISH_OPTIONS = [
+  'Full Color (CMYK)', 'Black & White', '1 Color', '2 Color',
+  'Full Color + Gloss Laminate', 'Full Color + Matte Laminate', 'Full Color + UV Coating',
+];
+
+function CustomerSelector({ onSelect, selected }) {
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    if (search.length < 1) { setResults([]); return; }
+    const t = setTimeout(() => {
+      api.getCustomers(search).then(setResults).catch(() => {});
+    }, 200);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  if (selected) return (
+    <div className="flex items-center gap-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm">
+        {selected.name[0]}
+      </div>
+      <div className="flex-1">
+        <div className="text-sm font-medium text-white">{selected.name}</div>
+        {selected.company && <div className="text-xs text-slate-400">{selected.company}</div>}
+      </div>
+      <button onClick={() => onSelect(null)} className="text-slate-500 hover:text-slate-300 p-1">
+        <X size={14} />
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => { setSearch(e.target.value); setShowDropdown(true); }}
+          onFocus={() => setShowDropdown(true)}
+          placeholder="Search customers..."
+          className="form-input pl-9"
+        />
+      </div>
+      {showDropdown && results.length > 0 && (
+        <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-card overflow-hidden">
+          {results.slice(0, 6).map(c => (
+            <button
+              key={c.id}
+              onClick={() => { onSelect(c); setSearch(''); setShowDropdown(false); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-navy-600 text-left transition-colors"
+            >
+              <div className="w-7 h-7 rounded-full bg-navy-600 flex items-center justify-center text-slate-400 text-xs font-bold shrink-0">
+                {c.name[0]}
+              </div>
+              <div>
+                <div className="text-sm text-slate-200">{c.name}</div>
+                {c.company && <div className="text-xs text-slate-500">{c.company}</div>}
+              </div>
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              const name = search.trim();
+              if (name) { onSelect({ name, id: null }); setSearch(''); setShowDropdown(false); }
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-navy-600 text-slate-400 text-sm border-t border-border transition-colors"
+          >
+            <User size={12} />
+            Use "<strong className="text-slate-300">{search}</strong>" as new customer
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const STEPS = ['Customer', 'Product', 'Options', 'Pricing'];
+
+export default function QuickQuotePage() {
+  const navigate = useNavigate();
+  const [step, setStep] = useState(0);
+  const [customer, setCustomer] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [qty, setQty] = useState(250);
+  const [paper, setPaper] = useState('');
+  const [finish, setFinish] = useState('');
+  const [designHours, setDesignHours] = useState(0);
+  const [dueDate, setDueDate] = useState('');
+  const [pricing, setPricing] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [productSearch, setProductSearch] = useState('');
+
+  useEffect(() => {
+    api.getProducts().then(setProducts).catch(console.error);
+  }, []);
+
+  const calculatePricing = useCallback(async () => {
+    if (!selectedProduct) return;
+    setLoading(true);
+    try {
+      // Estimate material cost from template materials
+      const matCost = (selectedProduct.materials || []).reduce((sum, m) => {
+        return sum + (parseFloat(m.unit_cost || 0) * parseFloat(m.quantity || 1) * qty);
+      }, 0) + (qty * 0.05); // baseline per-unit estimate
+
+      const setupH = parseFloat(selectedProduct.setup_time || 0);
+      const runH = parseFloat(selectedProduct.run_time_per_unit || 0) * qty;
+      const finishH = parseFloat(selectedProduct.finishing_time || 0);
+      const laborHours = setupH + runH + finishH;
+
+      const result = await api.calculateQuote({
+        materialCost: matCost,
+        laborHours,
+        designHours: parseFloat(designHours || 0),
+        outsourcedCost: 0,
+        dueDate,
+        complexityMultiplier: parseFloat(selectedProduct.complexity_multiplier || 1),
+      });
+      setPricing(result);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedProduct, qty, designHours, dueDate]);
+
+  useEffect(() => {
+    if (step === 3 && selectedProduct) calculatePricing();
+  }, [step, selectedProduct, qty, designHours, dueDate, calculatePricing]);
+
+  const handleSave = async () => {
+    if (!customer || !selectedProduct || !pricing) return;
+    setSaving(true);
+    setError('');
+    try {
+      const matCost = (selectedProduct.materials || []).reduce((sum, m) => {
+        return sum + (parseFloat(m.unit_cost || 0) * parseFloat(m.quantity || 1) * qty);
+      }, 0) + (qty * 0.05);
+
+      const setupH = parseFloat(selectedProduct.setup_time || 0);
+      const runH = parseFloat(selectedProduct.run_time_per_unit || 0) * qty;
+      const finishH = parseFloat(selectedProduct.finishing_time || 0);
+      const laborHours = setupH + runH + finishH;
+
+      const quote = await api.createQuote({
+        customer_id: customer.id || null,
+        customer_name: customer.name,
+        project_name: selectedProduct.name,
+        type: 'quick',
+        product_template_id: selectedProduct.id,
+        quantity: qty,
+        paper_material: paper,
+        color_finish: finish,
+        due_date: dueDate,
+        materialCost: matCost,
+        laborHours,
+        designHours: parseFloat(designHours || 0),
+        outsourcedCost: 0,
+        complexityMultiplier: parseFloat(selectedProduct.complexity_multiplier || 1),
+      });
+      navigate(`/quotes/${quote.id}/review`);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const filteredProducts = products.filter(p =>
+    !productSearch || p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (p.category || '').toLowerCase().includes(productSearch.toLowerCase())
+  );
+
+  const grouped = filteredProducts.reduce((acc, p) => {
+    const cat = p.category || 'Other';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(p);
+    return acc;
+  }, {});
+
+  const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n || 0);
+
+  const canAdvance = [
+    !!customer,
+    !!selectedProduct,
+    !!(paper && finish),
+    true,
+  ][step];
+
+  return (
+    <div className="p-6 max-w-3xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-9 h-9 bg-blue-500/15 border border-blue-500/20 rounded-xl flex items-center justify-center">
+          <Zap size={17} className="text-blue-400" />
+        </div>
+        <div>
+          <h1 className="page-title">Quick Quote</h1>
+          <p className="text-slate-400 text-xs">Standard products • Fast turnaround</p>
+        </div>
+      </div>
+
+      {/* Step indicator */}
+      <div className="flex items-center gap-0 mb-7">
+        {STEPS.map((s, i) => (
+          <React.Fragment key={s}>
+            <button
+              onClick={() => i < step && setStep(i)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                i === step ? 'bg-blue-500/15 text-blue-400 border border-blue-500/20' :
+                i < step ? 'text-slate-300 cursor-pointer hover:text-white' :
+                'text-slate-600 cursor-not-allowed'
+              }`}
+            >
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ${
+                i < step ? 'bg-blue-500 text-white' :
+                i === step ? 'bg-blue-500/30 text-blue-300' : 'bg-navy-600 text-slate-500'
+              }`}>{i < step ? '✓' : i + 1}</span>
+              {s}
+            </button>
+            {i < STEPS.length - 1 && <ChevronRight size={13} className="text-slate-700 mx-0.5" />}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5 mb-4">
+          <AlertCircle size={14} className="text-red-400 shrink-0" />
+          <span className="text-red-300 text-sm">{error}</span>
+        </div>
+      )}
+
+      <div className="card p-6 mb-5">
+        {/* STEP 0 — Customer */}
+        {step === 0 && (
+          <div>
+            <h2 className="section-title mb-1">Select Customer</h2>
+            <p className="text-slate-400 text-sm mb-5">Search existing customers or type a name to continue.</p>
+            <CustomerSelector onSelect={setCustomer} selected={customer} />
+          </div>
+        )}
+
+        {/* STEP 1 — Product */}
+        {step === 1 && (
+          <div>
+            <h2 className="section-title mb-1">Select Product</h2>
+            <p className="text-slate-400 text-sm mb-4">Choose a product template to start the quote.</p>
+            <div className="relative mb-4">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                value={productSearch}
+                onChange={e => setProductSearch(e.target.value)}
+                placeholder="Search products..."
+                className="form-input pl-9"
+              />
+            </div>
+            <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
+              {Object.entries(grouped).map(([cat, items]) => (
+                <div key={cat}>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">{cat}</div>
+                  <div className="grid gap-2">
+                    {items.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => setSelectedProduct(p)}
+                        className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
+                          selectedProduct?.id === p.id
+                            ? 'border-blue-500/50 bg-blue-500/10 text-white'
+                            : 'border-border bg-navy-800 text-slate-300 hover:border-blue-500/30 hover:bg-navy-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{p.name}</span>
+                          <span className="text-xs text-slate-500">×{p.complexity_multiplier} complexity</span>
+                        </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          Setup: {p.setup_time}h · Run: {p.run_time_per_unit}h/unit · Finish: {p.finishing_time}h
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2 — Options */}
+        {step === 2 && (
+          <div>
+            <h2 className="section-title mb-1">Job Options</h2>
+            <p className="text-slate-400 text-sm mb-5">Specify quantity, material, and finish.</p>
+            <div className="grid gap-5">
+              <div className="form-group">
+                <label className="form-label">Quantity</label>
+                <input
+                  type="number"
+                  value={qty}
+                  onChange={e => setQty(parseInt(e.target.value) || 1)}
+                  min={1}
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Paper / Material</label>
+                <select value={paper} onChange={e => setPaper(e.target.value)} className="form-input">
+                  <option value="">Select paper/material...</option>
+                  {PAPER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Color / Finish</label>
+                <select value={finish} onChange={e => setFinish(e.target.value)} className="form-input">
+                  <option value="">Select finish...</option>
+                  {FINISH_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Design Time (hours)</label>
+                <input
+                  type="number"
+                  value={designHours}
+                  onChange={e => setDesignHours(parseFloat(e.target.value) || 0)}
+                  min={0}
+                  step={0.25}
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Due Date</label>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={e => setDueDate(e.target.value)}
+                  className="form-input"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3 — Pricing Preview */}
+        {step === 3 && (
+          <div>
+            <h2 className="section-title mb-1">Quote Summary</h2>
+            <p className="text-slate-400 text-sm mb-5">Review the calculated price before saving.</p>
+
+            <div className="mb-4 p-3 bg-navy-800 rounded-lg border border-border text-sm space-y-1">
+              <div className="flex justify-between"><span className="text-slate-400">Customer</span><span className="text-slate-200">{customer?.name}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Product</span><span className="text-slate-200">{selectedProduct?.name}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Quantity</span><span className="text-slate-200">{qty.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Material</span><span className="text-slate-200">{paper || '—'}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Finish</span><span className="text-slate-200">{finish || '—'}</span></div>
+              {dueDate && <div className="flex justify-between"><span className="text-slate-400">Due Date</span><span className="text-slate-200">{dueDate}</span></div>}
+            </div>
+
+            {loading ? (
+              <div className="flex flex-col items-center py-8 gap-3">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-slate-400 text-sm">Calculating...</span>
+              </div>
+            ) : pricing ? (
+              <div className="space-y-2">
+                {[
+                  ['Materials', pricing.materialCost],
+                  ['Labor', pricing.laborCost],
+                  ['Design', pricing.designCost],
+                  ['Overhead', pricing.overheadCost],
+                ].map(([label, val]) => val > 0 && (
+                  <div key={label} className="flex justify-between text-sm">
+                    <span className="text-slate-400">{label}</span>
+                    <span className="text-slate-300 font-mono">{fmt(val)}</span>
+                  </div>
+                ))}
+                {pricing.rushFee > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-amber-400">Rush Fee (+{pricing.rushPercent}%)</span>
+                    <span className="text-amber-400 font-mono">{fmt(pricing.rushFee)}</span>
+                  </div>
+                )}
+                <div className="border-t border-border pt-3 mt-3 flex justify-between">
+                  <span className="font-display font-bold text-white text-lg">Total</span>
+                  <span className="font-display font-bold text-2xl text-blue-400">{fmt(pricing.finalPrice)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-slate-500">
+                  <span>Estimated Margin</span>
+                  <span className={pricing.marginPercent >= 35 ? 'text-emerald-400' : 'text-amber-400'}>
+                    {pricing.marginPercent?.toFixed(1)}% · {fmt(pricing.profit)} profit
+                  </span>
+                </div>
+                {pricing.rushPercent > 0 && (
+                  <div className="text-xs text-amber-400/80 bg-amber-400/5 border border-amber-400/15 rounded-md px-2 py-1.5">
+                    ⚡ Rush pricing applied: {pricing.daysUntilDue} days until due date
+                  </div>
+                )}
+                <button onClick={calculatePricing} className="btn-ghost w-full justify-center mt-2 text-xs">
+                  <Calculator size={12} /> Recalculate
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-slate-400 text-sm">Failed to calculate. Please try again.</div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => step > 0 ? setStep(s => s - 1) : navigate('/quotes')}
+          className="btn-secondary"
+        >
+          <ChevronLeft size={15} /> {step === 0 ? 'Cancel' : 'Back'}
+        </button>
+
+        {step < 3 ? (
+          <button
+            onClick={() => setStep(s => s + 1)}
+            disabled={!canAdvance}
+            className={`btn-primary ${!canAdvance ? 'opacity-40 cursor-not-allowed' : ''}`}
+          >
+            Next <ChevronRight size={15} />
+          </button>
+        ) : (
+          <button
+            onClick={handleSave}
+            disabled={saving || loading || !pricing}
+            className="btn-primary"
+          >
+            {saving ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Saving...</> : <>Save Quote <ChevronRight size={15} /></>}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

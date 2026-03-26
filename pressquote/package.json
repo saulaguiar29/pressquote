@@ -1,0 +1,12 @@
+{
+  "name": "pressquote",
+  "version": "1.0.0",
+  "description": "PressQuote — Print Shop Quoting Software",
+  "scripts": {
+    "setup": "npm install --prefix backend && npm install --prefix frontend",
+    "seed": "npm run seed --prefix backend",
+    "start:api": "npm start --prefix backend",
+    "start:ui": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend"
+  }
+}
