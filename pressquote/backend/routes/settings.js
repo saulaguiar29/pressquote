@@ -1,35 +1,42 @@
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../database');
+const { pool } = require('../database');
 const authMiddleware = require('../middleware/auth');
 
 router.use(authMiddleware);
 
 // GET /api/settings
-router.get('/', (req, res) => {
-  const db = getDb();
-  const rows = db.prepare('SELECT key, value FROM company_settings').all();
-  const settings = {};
-  rows.forEach(r => { settings[r.key] = r.value; });
-  res.json(settings);
+router.get('/', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT key, value FROM company_settings');
+    const settings = {};
+    rows.forEach(r => { settings[r.key] = r.value; });
+    res.json(settings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // PUT /api/settings
-router.put('/', (req, res) => {
+router.put('/', async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
-  const db = getDb();
-  const updates = req.body;
-  const stmt = db.prepare('INSERT INTO company_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP');
-  const updateMany = db.transaction((obj) => {
-    for (const [key, value] of Object.entries(obj)) {
-      stmt.run(key, String(value));
+  try {
+    const updates = req.body;
+    for (const [key, value] of Object.entries(updates)) {
+      await pool.query(
+        'INSERT INTO company_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()',
+        [key, String(value)]
+      );
     }
-  });
-  updateMany(updates);
-  const rows = db.prepare('SELECT key, value FROM company_settings').all();
-  const settings = {};
-  rows.forEach(r => { settings[r.key] = r.value; });
-  res.json(settings);
+    const { rows } = await pool.query('SELECT key, value FROM company_settings');
+    const settings = {};
+    rows.forEach(r => { settings[r.key] = r.value; });
+    res.json(settings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 module.exports = router;

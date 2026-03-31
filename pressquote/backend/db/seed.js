@@ -1,21 +1,17 @@
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const bcrypt = require('bcryptjs');
-const { getDb } = require('../database');
+const { pool } = require('../database');
 const { createSchema } = require('./schema');
 
 async function seed() {
-  createSchema();
-  const db = getDb();
+  await createSchema();
 
   // Users
   const hash = await bcrypt.hash('password123', 10);
-  const userExists = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@pressquote.com');
-  if (!userExists) {
-    db.prepare(`INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)`).run(
-      'admin@pressquote.com', hash, 'Admin User', 'admin'
-    );
-    db.prepare(`INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)`).run(
-      'staff@pressquote.com', hash, 'Staff User', 'staff'
-    );
+  const { rows: userExists } = await pool.query('SELECT id FROM users WHERE email = $1', ['admin@pressquote.com']);
+  if (!userExists[0]) {
+    await pool.query('INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4)', ['admin@pressquote.com', hash, 'Admin User', 'admin']);
+    await pool.query('INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4)', ['staff@pressquote.com', hash, 'Staff User', 'staff']);
     console.log('Users seeded');
   }
 
@@ -33,21 +29,22 @@ async function seed() {
     ['company_address', '123 Press Way, Print City, PC 12345'],
   ];
   for (const [key, value] of defaultSettings) {
-    const existing = db.prepare('SELECT id FROM company_settings WHERE key = ?').get(key);
-    if (!existing) {
-      db.prepare('INSERT INTO company_settings (key, value) VALUES (?, ?)').run(key, value);
-    }
+    await pool.query(
+      'INSERT INTO company_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING',
+      [key, value]
+    );
   }
   console.log('Settings seeded');
 
   // Suppliers
-  const supplierExists = db.prepare('SELECT id FROM suppliers WHERE name = ?').get('Neenah Paper');
-  let supplierId = supplierExists?.id;
-  if (!supplierExists) {
-    const result = db.prepare(`INSERT INTO suppliers (name, contact_email, contact_phone) VALUES (?, ?, ?)`).run(
-      'Neenah Paper', 'orders@neenah.com', '800-558-5061'
+  const { rows: supplierExists } = await pool.query('SELECT id FROM suppliers WHERE name = $1', ['Neenah Paper']);
+  let supplierId = supplierExists[0]?.id;
+  if (!supplierExists[0]) {
+    const { rows } = await pool.query(
+      'INSERT INTO suppliers (name, contact_email, contact_phone) VALUES ($1, $2, $3) RETURNING id',
+      ['Neenah Paper', 'orders@neenah.com', '800-558-5061']
     );
-    supplierId = result.lastInsertRowid;
+    supplierId = rows[0].id;
   }
 
   // Materials
@@ -64,12 +61,10 @@ async function seed() {
     ['Saddle Stitch Wire', 'unit', 0.02, 'Bindery Supply Co', 5000, 500],
   ];
   for (const [name, unit_type, unit_cost, supplier, inventory_qty, reorder_point] of materials) {
-    const existing = db.prepare('SELECT id FROM materials WHERE name = ?').get(name);
-    if (!existing) {
-      db.prepare(`INSERT INTO materials (name, unit_type, unit_cost, supplier, inventory_qty, reorder_point) VALUES (?, ?, ?, ?, ?, ?)`).run(
-        name, unit_type, unit_cost, supplier, inventory_qty, reorder_point
-      );
-    }
+    await pool.query(
+      'INSERT INTO materials (name, unit_type, unit_cost, supplier, inventory_qty, reorder_point) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING',
+      [name, unit_type, unit_cost, supplier, inventory_qty, reorder_point]
+    );
   }
   console.log('Materials seeded');
 
@@ -87,10 +82,11 @@ async function seed() {
     { name: 'Vinyl Banner', category: 'Banners', setup_time: 0.5, run_time_per_unit: 0.1, finishing_time: 0.5, complexity_multiplier: 1.3, default_margin: 50 },
   ];
   for (const t of templates) {
-    const existing = db.prepare('SELECT id FROM product_templates WHERE name = ?').get(t.name);
-    if (!existing) {
-      db.prepare(`INSERT INTO product_templates (name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
-        t.name, t.category, t.setup_time, t.run_time_per_unit, t.finishing_time, t.complexity_multiplier, t.default_margin
+    const { rows: existing } = await pool.query('SELECT id FROM product_templates WHERE name = $1', [t.name]);
+    if (!existing[0]) {
+      await pool.query(
+        'INSERT INTO product_templates (name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [t.name, t.category, t.setup_time, t.run_time_per_unit, t.finishing_time, t.complexity_multiplier, t.default_margin]
       );
     }
   }
@@ -105,10 +101,11 @@ async function seed() {
     { supplier_name: 'Emboss Co', item_name: 'Embossing Setup', base_cost: 175, shipping_cost: 20, lead_time: 7 },
   ];
   for (const item of outsourcedItems) {
-    const existing = db.prepare('SELECT id FROM outsourced_items WHERE item_name = ?').get(item.item_name);
-    if (!existing) {
-      db.prepare(`INSERT INTO outsourced_items (supplier_name, item_name, base_cost, shipping_cost, lead_time) VALUES (?, ?, ?, ?, ?)`).run(
-        item.supplier_name, item.item_name, item.base_cost, item.shipping_cost, item.lead_time
+    const { rows: existing } = await pool.query('SELECT id FROM outsourced_items WHERE item_name = $1', [item.item_name]);
+    if (!existing[0]) {
+      await pool.query(
+        'INSERT INTO outsourced_items (supplier_name, item_name, base_cost, shipping_cost, lead_time) VALUES ($1, $2, $3, $4, $5)',
+        [item.supplier_name, item.item_name, item.base_cost, item.shipping_cost, item.lead_time]
       );
     }
   }
@@ -123,15 +120,17 @@ async function seed() {
     { name: 'Amanda Torres', email: 'amanda@eventpros.com', phone: '555-678-9012', company: 'Event Pros' },
   ];
   for (const c of sampleCustomers) {
-    const existing = db.prepare('SELECT id FROM customers WHERE email = ?').get(c.email);
-    if (!existing) {
-      db.prepare('INSERT INTO customers (name, email, phone, company) VALUES (?, ?, ?, ?)').run(c.name, c.email, c.phone, c.company);
-    }
+    await pool.query(
+      'INSERT INTO customers (name, email, phone, company) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
+      [c.name, c.email, c.phone, c.company]
+    );
   }
   console.log('Customers seeded');
 
   console.log('\n✅ Seed complete!');
   console.log('📧 Login: admin@pressquote.com / password123');
+
+  await pool.end();
 }
 
-seed().catch(console.error);
+seed().catch(err => { console.error(err); process.exit(1); });

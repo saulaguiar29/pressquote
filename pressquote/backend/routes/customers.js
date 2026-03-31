@@ -1,51 +1,79 @@
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../database');
+const { pool } = require('../database');
 const authMiddleware = require('../middleware/auth');
 
 router.use(authMiddleware);
 
-router.get('/', (req, res) => {
-  const db = getDb();
-  const { search } = req.query;
-  let customers;
-  if (search) {
-    const q = `%${search}%`;
-    customers = db.prepare('SELECT * FROM customers WHERE name LIKE ? OR email LIKE ? OR company LIKE ? ORDER BY name').all(q, q, q);
-  } else {
-    customers = db.prepare('SELECT * FROM customers ORDER BY name').all();
+router.get('/', async (req, res) => {
+  try {
+    const { search } = req.query;
+    let result;
+    if (search) {
+      const q = `%${search}%`;
+      result = await pool.query(
+        'SELECT * FROM customers WHERE name ILIKE $1 OR email ILIKE $1 OR company ILIKE $1 ORDER BY name',
+        [q]
+      );
+    } else {
+      result = await pool.query('SELECT * FROM customers ORDER BY name');
+    }
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
-  res.json(customers);
 });
 
-router.get('/:id', (req, res) => {
-  const db = getDb();
-  const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(req.params.id);
-  if (!customer) return res.status(404).json({ error: 'Not found' });
-  res.json(customer);
+router.get('/:id', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM customers WHERE id = $1', [req.params.id]);
+    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-router.post('/', (req, res) => {
-  const db = getDb();
-  const { name, email, phone, company, address, notes } = req.body;
-  if (!name) return res.status(400).json({ error: 'Name required' });
-  const result = db.prepare('INSERT INTO customers (name, email, phone, company, address, notes) VALUES (?, ?, ?, ?, ?, ?)').run(name, email, phone, company, address, notes);
-  const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(result.lastInsertRowid);
-  res.status(201).json(customer);
+router.post('/', async (req, res) => {
+  try {
+    const { name, email, phone, company, address, notes } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name required' });
+    const { rows } = await pool.query(
+      'INSERT INTO customers (name, email, phone, company, address, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [name, email, phone, company, address, notes]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-router.put('/:id', (req, res) => {
-  const db = getDb();
-  const { name, email, phone, company, address, notes } = req.body;
-  db.prepare('UPDATE customers SET name=?, email=?, phone=?, company=?, address=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(name, email, phone, company, address, notes, req.params.id);
-  const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(req.params.id);
-  res.json(customer);
+router.put('/:id', async (req, res) => {
+  try {
+    const { name, email, phone, company, address, notes } = req.body;
+    await pool.query(
+      'UPDATE customers SET name=$1, email=$2, phone=$3, company=$4, address=$5, notes=$6, updated_at=NOW() WHERE id=$7',
+      [name, email, phone, company, address, notes, req.params.id]
+    );
+    const { rows } = await pool.query('SELECT * FROM customers WHERE id = $1', [req.params.id]);
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-router.delete('/:id', (req, res) => {
-  const db = getDb();
-  db.prepare('DELETE FROM customers WHERE id = ?').run(req.params.id);
-  res.json({ success: true });
+router.delete('/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM customers WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 module.exports = router;
