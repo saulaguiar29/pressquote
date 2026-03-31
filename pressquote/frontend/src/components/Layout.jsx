@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FileText, Zap, Wrench, Package, Layers,
   Truck, Users, Settings, LogOut, ChevronRight, Printer,
-  Plus, Menu, X
+  Plus, Menu, X, UserCog
 } from 'lucide-react';
 
 const navItems = [
@@ -18,6 +18,7 @@ const navItems = [
   { path: '/products', label: 'Products', icon: Layers },
   { path: '/suppliers', label: 'Suppliers', icon: Truck },
   { path: '/customers', label: 'Customers', icon: Users },
+  { path: '/users', label: 'Users', icon: UserCog },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 

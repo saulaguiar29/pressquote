@@ -36,6 +36,29 @@ router.get('/me', authMiddleware, (req, res) => {
   res.json({ user: req.user });
 });
 
+// GET /api/auth/users (admin only)
+router.get('/users', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const { rows } = await pool.query('SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/auth/users/:id (admin only)
+router.delete('/users/:id', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    if (String(req.params.id) === String(req.user.id)) return res.status(400).json({ error: 'Cannot delete your own account' });
+    await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // POST /api/auth/register (admin only in production)
 router.post('/register', authMiddleware, async (req, res) => {
   try {

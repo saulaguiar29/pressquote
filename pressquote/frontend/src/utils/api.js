@@ -30,6 +30,8 @@ export const api = {
   login: (email, password) => request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
   me: () => request('/auth/me'),
   register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+  getUsers: () => request('/auth/users'),
+  deleteUser: (id) => request(`/auth/users/${id}`, { method: 'DELETE' }),
 
   // Settings
   getSettings: () => request('/settings'),
