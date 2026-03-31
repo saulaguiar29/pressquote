@@ -35,6 +35,7 @@ app.use('/api/materials', require('./routes/materials'));
 app.use('/api/suppliers', require('./routes/suppliers'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/quotes', require('./routes/quotes'));
+app.use('/api/quickbooks', require('./routes/quickbooks'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));

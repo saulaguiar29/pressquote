@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../utils/api';
-import { Settings, Save, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Settings, Save, CheckCircle, AlertCircle, Info, Link, Link2Off, RefreshCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const SETTING_FIELDS = [
@@ -70,15 +71,76 @@ const RUSH_RULES = [
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
+  // QuickBooks state
+  const [qbConnected, setQbConnected] = useState(false);
+  const [qbLoading, setQbLoading] = useState(false);
+  const [qbSyncing, setQbSyncing] = useState(false);
+  const [qbMessage, setQbMessage] = useState('');
+
   useEffect(() => {
     api.getSettings().then(setSettings).finally(() => setLoading(false));
+    api.qbStatus().then(r => setQbConnected(r.connected)).catch(() => {});
+
+    // Handle redirect back from QuickBooks OAuth
+    const qbParam = searchParams.get('qb');
+    if (qbParam === 'connected') {
+      setQbConnected(true);
+      setQbMessage('QuickBooks connected successfully!');
+      setSearchParams({});
+      setTimeout(() => setQbMessage(''), 4000);
+    } else if (qbParam === 'error') {
+      setQbMessage('Failed to connect QuickBooks. Please try again.');
+      setSearchParams({});
+      setTimeout(() => setQbMessage(''), 4000);
+    }
   }, []);
+
+  const handleQbConnect = async () => {
+    setQbLoading(true);
+    try {
+      const { url } = await api.qbAuthUrl();
+      window.location.href = url;
+    } catch (e) {
+      setQbMessage('Failed to get QuickBooks auth URL.');
+      setQbLoading(false);
+    }
+  };
+
+  const handleQbDisconnect = async () => {
+    if (!window.confirm('Disconnect QuickBooks?')) return;
+    setQbLoading(true);
+    try {
+      await api.qbDisconnect();
+      setQbConnected(false);
+      setQbMessage('QuickBooks disconnected.');
+      setTimeout(() => setQbMessage(''), 3000);
+    } catch (e) {
+      setQbMessage('Failed to disconnect.');
+    } finally {
+      setQbLoading(false);
+    }
+  };
+
+  const handleQbSyncCustomers = async () => {
+    setQbSyncing(true);
+    setQbMessage('');
+    try {
+      const { imported, total } = await api.qbSyncCustomers();
+      setQbMessage(`Synced ${total} customers from QuickBooks — ${imported} new imported.`);
+      setTimeout(() => setQbMessage(''), 5000);
+    } catch (e) {
+      setQbMessage(`Sync failed: ${e.message}`);
+    } finally {
+      setQbSyncing(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -174,6 +236,47 @@ export default function SettingsPage() {
               />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* QuickBooks Integration */}
+      <div className="card p-6 mb-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="section-title text-base flex items-center gap-2">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Intuit_QuickBooks_logo.svg/120px-Intuit_QuickBooks_logo.svg.png" alt="QuickBooks" className="h-5" />
+              QuickBooks Online
+            </h2>
+            <p className="text-gray-500 text-sm mt-0.5">Export invoices and sync customers</p>
+          </div>
+          <div className={`px-2.5 py-1 rounded-full text-xs font-medium ${qbConnected ? 'bg-forest-100 text-forest-700' : 'bg-gray-100 text-gray-500'}`}>
+            {qbConnected ? 'Connected' : 'Not connected'}
+          </div>
+        </div>
+
+        {qbMessage && (
+          <div className={`flex items-center gap-2 rounded-lg px-3 py-2.5 mb-4 text-sm ${qbMessage.includes('success') || qbMessage.includes('Synced') ? 'bg-forest-50 text-forest-700 border border-forest-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+            {qbMessage}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          {!qbConnected ? (
+            <button onClick={handleQbConnect} disabled={qbLoading} className="btn-primary">
+              {qbLoading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Link size={14} />}
+              Connect QuickBooks
+            </button>
+          ) : (
+            <>
+              <button onClick={handleQbSyncCustomers} disabled={qbSyncing} className="btn-secondary">
+                {qbSyncing ? <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" /> : <RefreshCw size={14} />}
+                Sync Customers
+              </button>
+              <button onClick={handleQbDisconnect} disabled={qbLoading} className="btn-danger">
+                <Link2Off size={14} /> Disconnect
+              </button>
+            </>
+          )}
         </div>
       </div>
 

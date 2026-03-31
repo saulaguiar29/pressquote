@@ -31,8 +31,12 @@ export default function QuoteReviewPage() {
   const [showEmail, setShowEmail] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [qbConnected, setQbConnected] = useState(false);
+  const [qbExporting, setQbExporting] = useState(false);
+  const [qbResult, setQbResult] = useState('');
 
   useEffect(() => {
+    api.qbStatus().then(r => setQbConnected(r.connected)).catch(() => {});
     api.getQuote(id)
       .then(q => {
         setQuote(q);
@@ -62,6 +66,19 @@ Thank you for your business!
 Best regards,
 PrintCo`;
   }
+
+  const handleQbExport = async () => {
+    setQbExporting(true);
+    setQbResult('');
+    try {
+      const { invoiceNumber } = await api.qbExportInvoice(id);
+      setQbResult(`Exported to QuickBooks as invoice ${invoiceNumber}`);
+    } catch (e) {
+      setQbResult(`Export failed: ${e.message}`);
+    } finally {
+      setQbExporting(false);
+    }
+  };
 
   const handleSave = async (newStatus = status) => {
     setSaving(true);
@@ -149,6 +166,12 @@ PrintCo`;
           <button onClick={() => setShowEmail(!showEmail)} className="btn-secondary">
             <Mail size={14} /> Email Draft
           </button>
+          {qbConnected && (
+            <button onClick={handleQbExport} disabled={qbExporting} className="btn-secondary">
+              {qbExporting ? <Loader size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+              {qbExporting ? 'Exporting...' : 'Export to QB'}
+            </button>
+          )}
           <button onClick={() => handleSave()} disabled={saving} className="btn-primary">
             {saving ? <Loader size={14} className="animate-spin" /> : saved ? <CheckCircle size={14} /> : <Save size={14} />}
             {saved ? 'Saved!' : 'Save'}
@@ -160,6 +183,12 @@ PrintCo`;
         <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5 mb-4">
           <AlertCircle size={14} className="text-red-400" />
           <span className="text-red-300 text-sm">{error}</span>
+        </div>
+      )}
+      {qbResult && (
+        <div className={`flex items-center gap-2 rounded-lg px-3 py-2.5 mb-4 text-sm ${qbResult.includes('failed') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-forest-50 text-forest-700 border border-forest-200'}`}>
+          <CheckCircle size={14} />
+          {qbResult}
         </div>
       )}
 

@@ -78,4 +78,11 @@ export const api = {
   createQuote: (data) => request('/quotes', { method: 'POST', body: JSON.stringify(data) }),
   updateQuote: (id, data) => request(`/quotes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteQuote: (id) => request(`/quotes/${id}`, { method: 'DELETE' }),
+
+  // QuickBooks
+  qbStatus: () => request('/quickbooks/status'),
+  qbAuthUrl: () => request('/quickbooks/auth-url'),
+  qbDisconnect: () => request('/quickbooks/disconnect', { method: 'DELETE' }),
+  qbExportInvoice: (quoteId) => request(`/quickbooks/export-invoice/${quoteId}`, { method: 'POST' }),
+  qbSyncCustomers: () => request('/quickbooks/sync-customers', { method: 'POST' }),
 };
