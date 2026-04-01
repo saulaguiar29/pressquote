@@ -46,7 +46,7 @@ export default function QuotesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="page-title">Quotes</h1>
-          <p className="text-slate-400 text-sm mt-0.5">{total} total quotes</p>
+          <p className="text-gray-900 text-sm mt-0.5">{total} total quotes</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => navigate('/quotes/quick')} className="btn-primary">
@@ -61,7 +61,7 @@ export default function QuotesPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative flex-1 min-w-48">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900" />
           <input
             type="text"
             value={search}
@@ -89,12 +89,12 @@ export default function QuotesPage() {
         {loading ? (
           <div className="p-8 text-center">
             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <span className="text-slate-400 text-sm">Loading quotes...</span>
+            <span className="text-gray-900 text-sm">Loading quotes...</span>
           </div>
         ) : quotes.length === 0 ? (
           <div className="p-12 text-center">
-            <FileText size={40} className="text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400">No quotes found.{search ? ' Try adjusting your search.' : ' Create your first quote!'}</p>
+            <FileText size={40} className="text-gray-900 mx-auto mb-3" />
+            <p className="text-gray-900">No quotes found.{search ? ' Try adjusting your search.' : ' Create your first quote!'}</p>
             {!search && (
               <button onClick={() => navigate('/quotes/quick')} className="btn-primary mx-auto mt-4">
                 <Plus size={14} /> Create Quote
@@ -126,10 +126,10 @@ export default function QuotesPage() {
                   >
                     <td className="table-cell font-mono text-blue-400 text-xs whitespace-nowrap">{q.quote_number}</td>
                     <td className="table-cell">
-                      <div className="text-sm font-medium text-slate-200">{q.customer_name}</div>
-                      {q.customer_company && <div className="text-xs text-slate-500">{q.customer_company}</div>}
+                      <div className="text-sm font-medium text-gray-900">{q.customer_name}</div>
+                      {q.customer_company && <div className="text-xs text-gray-900">{q.customer_company}</div>}
                     </td>
-                    <td className="table-cell text-slate-400 text-sm hidden md:table-cell">{q.project_name || '—'}</td>
+                    <td className="table-cell text-gray-900 text-sm hidden md:table-cell">{q.project_name || '—'}</td>
                     <td className="table-cell text-center hidden sm:table-cell">
                       <span className={`badge ${q.type === 'quick' ? 'bg-blue-500/10 text-blue-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
                         {q.type === 'quick' ? <Zap size={10} /> : <Wrench size={10} />}
@@ -139,14 +139,14 @@ export default function QuotesPage() {
                     <td className="table-cell text-center">
                       <span className={statusColors[q.status] || 'badge-draft'}>{q.status}</span>
                     </td>
-                    <td className="table-cell text-right font-display font-semibold text-white whitespace-nowrap">{fmt(q.final_price)}</td>
+                    <td className="table-cell text-right font-display font-semibold text-gray-900 whitespace-nowrap">{fmt(q.final_price)}</td>
                     <td className="table-cell text-right hidden lg:table-cell">
                       <span className={`text-sm font-mono ${q.margin_percent >= 35 ? 'text-emerald-400' : q.margin_percent >= 25 ? 'text-amber-400' : 'text-red-400'}`}>
                         {q.margin_percent ? q.margin_percent.toFixed(1) + '%' : '—'}
                       </span>
                     </td>
-                    <td className="table-cell text-right text-slate-400 text-xs hidden lg:table-cell whitespace-nowrap">{q.due_date || '—'}</td>
-                    <td className="table-cell text-right text-slate-500 text-xs hidden md:table-cell whitespace-nowrap">
+                    <td className="table-cell text-right text-gray-900 text-xs hidden lg:table-cell whitespace-nowrap">{q.due_date || '—'}</td>
+                    <td className="table-cell text-right text-gray-900 text-xs hidden md:table-cell whitespace-nowrap">
                       {new Date(q.created_at).toLocaleDateString()}
                     </td>
                   </tr>

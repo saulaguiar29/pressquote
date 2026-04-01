@@ -121,7 +121,7 @@ PrintCo`;
   );
 
   if (!quote) return (
-    <div className="p-6 text-center text-slate-400">
+    <div className="p-6 text-center text-gray-900">
       {error || 'Quote not found.'}
     </div>
   );
@@ -131,7 +131,7 @@ PrintCo`;
     { label: 'Labor', value: quote.labor_cost, color: '' },
     { label: 'Design', value: quote.design_cost, color: '' },
     { label: 'Outsourced', value: quote.outsourced_cost, color: '' },
-    { label: 'Overhead', value: quote.overhead_cost, color: 'text-slate-400' },
+    { label: 'Overhead', value: quote.overhead_cost, color: 'text-gray-900' },
     { label: `Rush Fee (+${quote.rush_percent || 0}%)`, value: quote.rush_fee, color: 'text-amber-400', hide: !quote.rush_fee },
   ];
 
@@ -148,7 +148,7 @@ PrintCo`;
               <h1 className="page-title">{quote.quote_number}</h1>
               <span className={statusColors[status]}>{status}</span>
             </div>
-            <div className="text-slate-400 text-sm mt-0.5">
+            <div className="text-gray-900 text-sm mt-0.5">
               {quote.customer_name} {quote.customer_company ? `· ${quote.customer_company}` : ''}
               {quote.project_name ? ` · ${quote.project_name}` : ''}
             </div>
@@ -199,8 +199,8 @@ PrintCo`;
           <div className="card p-6">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <div className="text-slate-400 text-sm">Final Quote Price</div>
-                <div className="font-display text-4xl font-bold text-white mt-1">{fmt(quote.final_price)}</div>
+                <div className="text-gray-900 text-sm">Final Quote Price</div>
+                <div className="font-display text-4xl font-bold text-gray-900 mt-1">{fmt(quote.final_price)}</div>
               </div>
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                 quote.type === 'quick' ? 'bg-blue-500/15 border border-blue-500/20' : 'bg-indigo-500/15 border border-indigo-500/20'
@@ -213,14 +213,14 @@ PrintCo`;
             <div className="space-y-2 mb-4">
               {rows.filter(r => !r.hide && r.value > 0).map(r => (
                 <div key={r.label} className="flex justify-between items-center py-1 border-b border-border/30 last:border-0">
-                  <span className={`text-sm ${r.color || 'text-slate-400'}`}>{r.label}</span>
-                  <span className={`font-mono text-sm ${r.color || 'text-slate-200'}`}>{fmt(r.value)}</span>
+                  <span className={`text-sm ${r.color || 'text-gray-900'}`}>{r.label}</span>
+                  <span className={`font-mono text-sm ${r.color || 'text-gray-900'}`}>{fmt(r.value)}</span>
                 </div>
               ))}
             </div>
 
             <div className="flex justify-between items-center pt-3 border-t border-border">
-              <span className="font-display font-bold text-white">Total</span>
+              <span className="font-display font-bold text-gray-900">Total</span>
               <span className="font-display font-bold text-2xl text-blue-400">{fmt(quote.final_price)}</span>
             </div>
 
@@ -252,12 +252,12 @@ PrintCo`;
                     {quote.lineItems.map((item, i) => (
                       <tr key={i} className="table-row">
                         <td className="table-cell">
-                          <span className="text-xs capitalize text-slate-400">{item.type}</span>
+                          <span className="text-xs capitalize text-gray-900">{item.type}</span>
                         </td>
-                        <td className="table-cell text-slate-200">{item.description}</td>
-                        <td className="table-cell text-right text-slate-300 font-mono text-xs">{item.quantity}</td>
-                        <td className="table-cell text-right text-slate-300 font-mono text-xs">{fmt(item.unit_cost)}</td>
-                        <td className="table-cell text-right font-mono text-sm text-white">{fmt(item.total_cost)}</td>
+                        <td className="table-cell text-gray-900">{item.description}</td>
+                        <td className="table-cell text-right text-gray-900 font-mono text-xs">{item.quantity}</td>
+                        <td className="table-cell text-right text-gray-900 font-mono text-xs">{fmt(item.unit_cost)}</td>
+                        <td className="table-cell text-right font-mono text-sm text-gray-900">{fmt(item.total_cost)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -275,7 +275,7 @@ PrintCo`;
               <div className="space-y-3">
                 <div className="form-group">
                   <label className="form-label">To</label>
-                  <input value={quote.customer_email || ''} readOnly className="form-input text-slate-400 cursor-default" placeholder="Customer email not on file" />
+                  <input value={quote.customer_email || ''} readOnly className="form-input text-gray-900 cursor-default" placeholder="Customer email not on file" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Subject</label>
@@ -296,7 +296,7 @@ PrintCo`;
                     <Send size={14} /> Mark as Sent
                   </button>
                 </div>
-                <p className="text-xs text-slate-500 text-center">Email sending integration can be connected via SMTP or SendGrid.</p>
+                <p className="text-xs text-gray-900 text-center">Email sending integration can be connected via SMTP or SendGrid.</p>
               </div>
             </div>
           )}
@@ -306,19 +306,19 @@ PrintCo`;
         <div className="space-y-4">
           {/* Profit stats */}
           <div className="card p-5">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Profitability</h3>
+            <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Profitability</h3>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <DollarSign size={13} className="text-emerald-400" />
-                  <span className="text-xs text-slate-400">Estimated Profit</span>
+                  <span className="text-xs text-gray-900">Estimated Profit</span>
                 </div>
                 <div className="font-display font-bold text-xl text-emerald-400">{fmt(quote.profit)}</div>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <TrendingUp size={13} className="text-blue-400" />
-                  <span className="text-xs text-slate-400">Margin</span>
+                  <span className="text-xs text-gray-900">Margin</span>
                 </div>
                 <div className={`font-display font-bold text-xl ${quote.margin_percent >= 35 ? 'text-blue-400' : 'text-amber-400'}`}>
                   {quote.margin_percent?.toFixed(1)}%
@@ -335,7 +335,7 @@ PrintCo`;
 
           {/* Job details */}
           <div className="card p-5">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Job Details</h3>
+            <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Job Details</h3>
             <div className="space-y-2 text-sm">
               {[
                 ['Type', quote.type === 'quick' ? 'Quick Quote' : 'Custom Job'],
@@ -347,8 +347,8 @@ PrintCo`;
                 ['Created', new Date(quote.created_at).toLocaleDateString()],
               ].filter(([, v]) => v).map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-2">
-                  <span className="text-slate-500 shrink-0">{k}</span>
-                  <span className="text-slate-200 text-right">{v}</span>
+                  <span className="text-gray-900 shrink-0">{k}</span>
+                  <span className="text-gray-900 text-right">{v}</span>
                 </div>
               ))}
             </div>
@@ -357,8 +357,8 @@ PrintCo`;
           {/* Notes */}
           {quote.notes && (
             <div className="card p-5">
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Notes</h3>
-              <p className="text-sm text-slate-300">{quote.notes}</p>
+              <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-2">Notes</h3>
+              <p className="text-sm text-gray-900">{quote.notes}</p>
             </div>
           )}
 

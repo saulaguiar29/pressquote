@@ -39,7 +39,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="page-title">{greeting}, {user?.name?.split(' ')[0]} 👋</h1>
-        <p className="text-slate-400 mt-1 text-sm">Here's what's happening with your quotes today.</p>
+        <p className="text-gray-900 mt-1 text-sm">Here's what's happening with your quotes today.</p>
       </div>
 
       {/* Quick actions */}
@@ -53,10 +53,10 @@ export default function DashboardPage() {
               <Zap size={18} className="text-blue-400" />
             </div>
             <div className="flex-1">
-              <div className="font-display font-semibold text-white text-base">Quick Quote</div>
-              <div className="text-slate-400 text-sm mt-0.5">Standard products — fast &amp; simple</div>
+              <div className="font-display font-semibold text-gray-900 text-base">Quick Quote</div>
+              <div className="text-gray-900 text-sm mt-0.5">Standard products — fast &amp; simple</div>
             </div>
-            <ArrowRight size={16} className="text-slate-600 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all mt-1" />
+            <ArrowRight size={16} className="text-gray-900 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all mt-1" />
           </div>
         </button>
 
@@ -69,10 +69,10 @@ export default function DashboardPage() {
               <Wrench size={18} className="text-indigo-400" />
             </div>
             <div className="flex-1">
-              <div className="font-display font-semibold text-white text-base">Custom Job</div>
-              <div className="text-slate-400 text-sm mt-0.5">Complex work with line items</div>
+              <div className="font-display font-semibold text-gray-900 text-base">Custom Job</div>
+              <div className="text-gray-900 text-sm mt-0.5">Complex work with line items</div>
             </div>
-            <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all mt-1" />
+            <ArrowRight size={16} className="text-gray-900 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all mt-1" />
           </div>
         </button>
       </div>
@@ -91,40 +91,40 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
           <div className="stat-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Quotes</span>
-              <FileText size={14} className="text-slate-500" />
+              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">Total Quotes</span>
+              <FileText size={14} className="text-gray-900" />
             </div>
-            <div className="font-display text-3xl font-bold text-white">{stats?.total || 0}</div>
-            <div className="text-slate-500 text-xs">{stats?.thisMonth || 0} this month</div>
+            <div className="font-display text-3xl font-bold text-gray-900">{stats?.total || 0}</div>
+            <div className="text-gray-900 text-xs">{stats?.thisMonth || 0} this month</div>
           </div>
 
           <div className="stat-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Sent</span>
+              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">Sent</span>
               <CheckCircle size={14} className="text-emerald-500" />
             </div>
-            <div className="font-display text-3xl font-bold text-white">{stats?.sent || 0}</div>
+            <div className="font-display text-3xl font-bold text-gray-900">{stats?.sent || 0}</div>
             <div className="text-emerald-500 text-xs">awaiting response</div>
           </div>
 
           <div className="stat-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Revenue</span>
+              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">Revenue</span>
               <DollarSign size={14} className="text-blue-400" />
             </div>
-            <div className="font-display text-2xl font-bold text-white">{fmt(stats?.totalRevenue)}</div>
-            <div className="text-slate-500 text-xs">sent + accepted</div>
+            <div className="font-display text-2xl font-bold text-gray-900">{fmt(stats?.totalRevenue)}</div>
+            <div className="text-gray-900 text-xs">sent + accepted</div>
           </div>
 
           <div className="stat-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Avg Margin</span>
+              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">Avg Margin</span>
               <TrendingUp size={14} className="text-blue-400" />
             </div>
-            <div className="font-display text-3xl font-bold text-white">
+            <div className="font-display text-3xl font-bold text-gray-900">
               {stats?.avgMargin ? stats.avgMargin.toFixed(1) : '—'}%
             </div>
-            <div className="text-slate-500 text-xs">across all quotes</div>
+            <div className="text-gray-900 text-xs">across all quotes</div>
           </div>
         </div>
       )}
@@ -133,7 +133,7 @@ export default function DashboardPage() {
       <div className="card">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <Clock size={15} className="text-slate-400" />
+            <Clock size={15} className="text-gray-900" />
             <span className="section-title text-base">Recent Quotes</span>
           </div>
           <button onClick={() => navigate('/quotes')} className="btn-ghost text-xs py-1.5 px-2.5">
@@ -147,8 +147,8 @@ export default function DashboardPage() {
           </div>
         ) : !stats?.recent?.length ? (
           <div className="p-10 text-center">
-            <BarChart3 size={36} className="text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400 text-sm">No quotes yet. Create your first one above!</p>
+            <BarChart3 size={36} className="text-gray-900 mx-auto mb-3" />
+            <p className="text-gray-900 text-sm">No quotes yet. Create your first one above!</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -172,19 +172,19 @@ export default function DashboardPage() {
                     onClick={() => navigate(`/quotes/${q.id}/review`)}
                   >
                     <td className="table-cell font-mono text-blue-400 text-xs">{q.quote_number}</td>
-                    <td className="table-cell text-slate-200 font-medium">{q.customer_name}</td>
-                    <td className="table-cell text-slate-400 hidden md:table-cell">{q.project_name || '—'}</td>
+                    <td className="table-cell text-gray-900 font-medium">{q.customer_name}</td>
+                    <td className="table-cell text-gray-900 hidden md:table-cell">{q.project_name || '—'}</td>
                     <td className="table-cell hidden md:table-cell">
                       <span className={`badge ${q.type === 'quick' ? 'bg-blue-500/10 text-blue-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
                         {q.type === 'quick' ? <Zap size={10} /> : <Wrench size={10} />}
                         {q.type}
                       </span>
                     </td>
-                    <td className="table-cell text-right font-display font-semibold text-white">{fmt(q.final_price)}</td>
+                    <td className="table-cell text-right font-display font-semibold text-gray-900">{fmt(q.final_price)}</td>
                     <td className="table-cell text-center">
                       <span className={statusColors[q.status] || 'badge-draft'}>{q.status}</span>
                     </td>
-                    <td className="table-cell text-center text-slate-300 hidden md:table-cell text-sm font-mono">
+                    <td className="table-cell text-center text-gray-900 hidden md:table-cell text-sm font-mono">
                       {q.margin_percent ? q.margin_percent.toFixed(1) + '%' : '—'}
                     </td>
                   </tr>

@@ -69,7 +69,7 @@ export default function ProductsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="page-title">Product Templates</h1>
-          <p className="text-slate-400 text-sm mt-0.5">{products.length} templates</p>
+          <p className="text-gray-900 text-sm mt-0.5">{products.length} templates</p>
         </div>
         <button onClick={openCreate} className="btn-primary">
           <Plus size={14} /> Add Template
@@ -77,19 +77,19 @@ export default function ProductsPage() {
       </div>
 
       {loading ? (
-        <div className="card p-8 text-center text-slate-400">Loading templates...</div>
+        <div className="card p-8 text-center text-gray-900">Loading templates...</div>
       ) : products.length === 0 ? (
         <div className="card p-12 text-center">
-          <Layers size={40} className="text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400">No product templates yet.</p>
+          <Layers size={40} className="text-gray-900 mx-auto mb-3" />
+          <p className="text-gray-900">No product templates yet.</p>
         </div>
       ) : (
         <div className="space-y-5">
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{category}</span>
-                <span className="text-xs text-slate-600">({items.length})</span>
+                <span className="text-xs font-semibold text-gray-900 uppercase tracking-widest">{category}</span>
+                <span className="text-xs text-gray-900">({items.length})</span>
               </div>
               <div className="card overflow-hidden">
                 <table className="w-full">
@@ -113,15 +113,15 @@ export default function ProductsPage() {
                         >
                           <td className="table-cell">
                             <div className="flex items-center gap-2">
-                              {expandedId === p.id ? <ChevronDown size={12} className="text-slate-400" /> : <ChevronRight size={12} className="text-slate-600" />}
-                              <span className="font-medium text-slate-200">{p.name}</span>
+                              {expandedId === p.id ? <ChevronDown size={12} className="text-gray-900" /> : <ChevronRight size={12} className="text-gray-900" />}
+                              <span className="font-medium text-gray-900">{p.name}</span>
                             </div>
                           </td>
-                          <td className="table-cell text-right font-mono text-sm text-slate-300 hidden md:table-cell">{p.setup_time}h</td>
-                          <td className="table-cell text-right font-mono text-sm text-slate-300 hidden md:table-cell">{p.run_time_per_unit}h</td>
-                          <td className="table-cell text-right font-mono text-sm text-slate-300 hidden md:table-cell">{p.finishing_time}h</td>
+                          <td className="table-cell text-right font-mono text-sm text-gray-900 hidden md:table-cell">{p.setup_time}h</td>
+                          <td className="table-cell text-right font-mono text-sm text-gray-900 hidden md:table-cell">{p.run_time_per_unit}h</td>
+                          <td className="table-cell text-right font-mono text-sm text-gray-900 hidden md:table-cell">{p.finishing_time}h</td>
                           <td className="table-cell text-right hidden lg:table-cell">
-                            <span className={`badge ${p.complexity_multiplier > 1.2 ? 'bg-amber-500/10 text-amber-400' : 'bg-slate-500/10 text-slate-400'}`}>
+                            <span className={`badge ${p.complexity_multiplier > 1.2 ? 'bg-amber-500/10 text-amber-400' : 'bg-slate-500/10 text-gray-900'}`}>
                               ×{p.complexity_multiplier}
                             </span>
                           </td>
@@ -142,20 +142,20 @@ export default function ProductsPage() {
                             <td colSpan={7} className="px-8 py-3 bg-navy-800/40 border-b border-border/30">
                               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                                 <div>
-                                  <span className="text-slate-500 text-xs uppercase tracking-wider block mb-0.5">100 units (labor)</span>
-                                  <span className="text-slate-200 font-mono">{totalHours(p, 100).toFixed(2)}h</span>
+                                  <span className="text-gray-900 text-xs uppercase tracking-wider block mb-0.5">100 units (labor)</span>
+                                  <span className="text-gray-900 font-mono">{totalHours(p, 100).toFixed(2)}h</span>
                                 </div>
                                 <div>
-                                  <span className="text-slate-500 text-xs uppercase tracking-wider block mb-0.5">500 units</span>
-                                  <span className="text-slate-200 font-mono">{totalHours(p, 500).toFixed(2)}h</span>
+                                  <span className="text-gray-900 text-xs uppercase tracking-wider block mb-0.5">500 units</span>
+                                  <span className="text-gray-900 font-mono">{totalHours(p, 500).toFixed(2)}h</span>
                                 </div>
                                 <div>
-                                  <span className="text-slate-500 text-xs uppercase tracking-wider block mb-0.5">Description</span>
-                                  <span className="text-slate-300">{p.description || '—'}</span>
+                                  <span className="text-gray-900 text-xs uppercase tracking-wider block mb-0.5">Description</span>
+                                  <span className="text-gray-900">{p.description || '—'}</span>
                                 </div>
                                 <div>
-                                  <span className="text-slate-500 text-xs uppercase tracking-wider block mb-0.5">Default Materials</span>
-                                  <span className="text-slate-300">{p.materials?.length ? p.materials.map(m => m.material_name).join(', ') : 'None linked'}</span>
+                                  <span className="text-gray-900 text-xs uppercase tracking-wider block mb-0.5">Default Materials</span>
+                                  <span className="text-gray-900">{p.materials?.length ? p.materials.map(m => m.material_name).join(', ') : 'None linked'}</span>
                                 </div>
                               </div>
                             </td>

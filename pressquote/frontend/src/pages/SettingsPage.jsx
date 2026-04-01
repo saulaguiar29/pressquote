@@ -157,7 +157,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-400">Loading settings...</div>;
+  if (loading) return <div className="p-8 text-center text-gray-900">Loading settings...</div>;
 
   const isAdmin = user?.role === 'admin';
 
@@ -166,7 +166,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="page-title">Settings</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Configure pricing rates and company info</p>
+          <p className="text-gray-900 text-sm mt-0.5">Configure pricing rates and company info</p>
         </div>
         {isAdmin && (
           <button onClick={handleSave} disabled={saving} className="btn-primary">
@@ -201,10 +201,10 @@ export default function SettingsPage() {
             <div key={field.key} className="flex items-start gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <label className="text-sm font-medium text-slate-200">{field.label}</label>
-                  <span className="text-xs text-slate-500 bg-navy-700 px-1.5 py-0.5 rounded">{field.unit}</span>
+                  <label className="text-sm font-medium text-gray-900">{field.label}</label>
+                  <span className="text-xs text-gray-900 bg-navy-700 px-1.5 py-0.5 rounded">{field.unit}</span>
                 </div>
-                <p className="text-xs text-slate-500">{field.description}</p>
+                <p className="text-xs text-gray-900">{field.description}</p>
               </div>
               <input
                 type={field.type}
@@ -247,9 +247,9 @@ export default function SettingsPage() {
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Intuit_QuickBooks_logo.svg/120px-Intuit_QuickBooks_logo.svg.png" alt="QuickBooks" className="h-5" />
               QuickBooks Online
             </h2>
-            <p className="text-gray-500 text-sm mt-0.5">Export invoices and sync customers</p>
+            <p className="text-gray-900 text-sm mt-0.5">Export invoices and sync customers</p>
           </div>
-          <div className={`px-2.5 py-1 rounded-full text-xs font-medium ${qbConnected ? 'bg-forest-100 text-forest-700' : 'bg-gray-100 text-gray-500'}`}>
+          <div className={`px-2.5 py-1 rounded-full text-xs font-medium ${qbConnected ? 'bg-forest-100 text-forest-700' : 'bg-gray-100 text-gray-900'}`}>
             {qbConnected ? 'Connected' : 'Not connected'}
           </div>
         </div>
@@ -283,13 +283,13 @@ export default function SettingsPage() {
       {/* Rush pricing reference */}
       <div className="card p-6">
         <h2 className="section-title text-base mb-4">Rush Pricing Rules</h2>
-        <p className="text-slate-400 text-sm mb-4">These rules are built into the pricing engine and apply automatically based on the due date.</p>
+        <p className="text-gray-900 text-sm mb-4">These rules are built into the pricing engine and apply automatically based on the due date.</p>
         <div className="space-y-2">
           {RUSH_RULES.map(rule => (
             <div key={rule.days} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-current" style={{ color: rule.color.replace('text-', '') }} />
-                <span className="text-sm text-slate-300">{rule.days} until due</span>
+                <span className="text-sm text-gray-900">{rule.days} until due</span>
               </div>
               <span className={`text-sm font-semibold font-mono ${rule.color}`}>{rule.fee}</span>
             </div>

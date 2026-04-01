@@ -21,7 +21,7 @@ function PrivateRoute({ children }) {
     <div className="flex items-center justify-center h-screen bg-navy-900">
       <div className="flex flex-col items-center gap-3">
         <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-slate-400 text-sm">Loading PressQuote...</span>
+        <span className="text-gray-900 text-sm">Loading PressQuote...</span>
       </div>
     </div>
   );

@@ -63,23 +63,23 @@ export default function CustomersPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="page-title">Customers</h1>
-          <p className="text-slate-400 text-sm mt-0.5">{customers.length} customers</p>
+          <p className="text-gray-900 text-sm mt-0.5">{customers.length} customers</p>
         </div>
         <button onClick={openCreate} className="btn-primary"><Plus size={14} /> Add Customer</button>
       </div>
 
       <div className="relative mb-5">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900" />
         <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search customers..." className="form-input pl-9 max-w-sm" />
       </div>
 
       <div className="card overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-slate-400">Loading...</div>
+          <div className="p-8 text-center text-gray-900">Loading...</div>
         ) : customers.length === 0 ? (
           <div className="p-12 text-center">
-            <Users size={40} className="text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400">{search ? 'No customers found.' : 'No customers yet.'}</p>
+            <Users size={40} className="text-gray-900 mx-auto mb-3" />
+            <p className="text-gray-900">{search ? 'No customers found.' : 'No customers yet.'}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -101,12 +101,12 @@ export default function CustomersPage() {
                         <div className="w-7 h-7 rounded-full bg-blue-500/15 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold shrink-0">
                           {c.name[0]}
                         </div>
-                        <span className="font-medium text-slate-200">{c.name}</span>
+                        <span className="font-medium text-gray-900">{c.name}</span>
                       </div>
                     </td>
-                    <td className="table-cell text-slate-400 hidden md:table-cell">{c.company || '—'}</td>
-                    <td className="table-cell text-slate-400 text-sm hidden md:table-cell">{c.email || '—'}</td>
-                    <td className="table-cell text-slate-400 text-sm hidden lg:table-cell">{c.phone || '—'}</td>
+                    <td className="table-cell text-gray-900 hidden md:table-cell">{c.company || '—'}</td>
+                    <td className="table-cell text-gray-900 text-sm hidden md:table-cell">{c.email || '—'}</td>
+                    <td className="table-cell text-gray-900 text-sm hidden lg:table-cell">{c.phone || '—'}</td>
                     <td className="table-cell text-right">
                       <div className="flex justify-end gap-1">
                         <button onClick={() => openEdit(c)} className="btn-ghost p-1.5"><Edit2 size={12} /></button>

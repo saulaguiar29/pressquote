@@ -55,7 +55,7 @@ export default function UsersPage() {
       <div className="p-6 max-w-2xl mx-auto">
         <div className="card p-8 text-center">
           <Shield size={32} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Admin access required to manage users.</p>
+          <p className="text-gray-900">Admin access required to manage users.</p>
         </div>
       </div>
     );
@@ -66,7 +66,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="page-title">Users</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Manage who has access to PressQuote</p>
+          <p className="text-gray-900 text-sm mt-0.5">Manage who has access to PressQuote</p>
         </div>
         <button onClick={() => { setShowForm(!showForm); setError(''); }} className="btn-primary">
           <UserPlus size={14} /> Add User
@@ -126,7 +126,7 @@ export default function UsersPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(s => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-900"
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
@@ -159,7 +159,7 @@ export default function UsersPage() {
       {/* Users list */}
       <div className="card overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-400">Loading users...</div>
+          <div className="p-8 text-center text-gray-900">Loading users...</div>
         ) : (
           <table className="w-full">
             <thead className="border-b border-forest-100 bg-forest-50/50">
@@ -180,19 +180,19 @@ export default function UsersPage() {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900 text-sm">{u.name}</div>
-                        <div className="text-gray-400 text-xs">{u.email}</div>
+                        <div className="text-gray-900 text-xs">{u.email}</div>
                       </div>
                     </div>
                   </td>
                   <td className="table-cell">
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                      u.role === 'admin' ? 'bg-forest-100 text-forest-700' : 'bg-gray-100 text-gray-500'
+                      u.role === 'admin' ? 'bg-forest-100 text-forest-700' : 'bg-gray-100 text-gray-900'
                     }`}>
                       {u.role === 'admin' ? <Shield size={10} /> : <User size={10} />}
                       {u.role}
                     </span>
                   </td>
-                  <td className="table-cell text-gray-400 text-xs">
+                  <td className="table-cell text-gray-900 text-xs">
                     {new Date(u.created_at).toLocaleDateString()}
                   </td>
                   <td className="table-cell text-right">

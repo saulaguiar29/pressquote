@@ -32,10 +32,10 @@ function CustomerSelector({ onSelect, selected }) {
         {selected.name[0]}
       </div>
       <div className="flex-1">
-        <div className="text-sm font-medium text-white">{selected.name}</div>
-        {selected.company && <div className="text-xs text-slate-400">{selected.company}</div>}
+        <div className="text-sm font-medium text-gray-900">{selected.name}</div>
+        {selected.company && <div className="text-xs text-gray-900">{selected.company}</div>}
       </div>
-      <button onClick={() => onSelect(null)} className="text-slate-500 hover:text-slate-300 p-1">
+      <button onClick={() => onSelect(null)} className="text-gray-900 hover:text-gray-900 p-1">
         <X size={14} />
       </button>
     </div>
@@ -44,7 +44,7 @@ function CustomerSelector({ onSelect, selected }) {
   return (
     <div className="relative">
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900" />
         <input
           type="text"
           value={search}
@@ -62,12 +62,12 @@ function CustomerSelector({ onSelect, selected }) {
               onClick={() => { onSelect(c); setSearch(''); setShowDropdown(false); }}
               className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-navy-600 text-left transition-colors"
             >
-              <div className="w-7 h-7 rounded-full bg-navy-600 flex items-center justify-center text-slate-400 text-xs font-bold shrink-0">
+              <div className="w-7 h-7 rounded-full bg-navy-600 flex items-center justify-center text-gray-900 text-xs font-bold shrink-0">
                 {c.name[0]}
               </div>
               <div>
-                <div className="text-sm text-slate-200">{c.name}</div>
-                {c.company && <div className="text-xs text-slate-500">{c.company}</div>}
+                <div className="text-sm text-gray-900">{c.name}</div>
+                {c.company && <div className="text-xs text-gray-900">{c.company}</div>}
               </div>
             </button>
           ))}
@@ -76,10 +76,10 @@ function CustomerSelector({ onSelect, selected }) {
               const name = search.trim();
               if (name) { onSelect({ name, id: null }); setSearch(''); setShowDropdown(false); }
             }}
-            className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-navy-600 text-slate-400 text-sm border-t border-border transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-navy-600 text-gray-900 text-sm border-t border-border transition-colors"
           >
             <User size={12} />
-            Use "<strong className="text-slate-300">{search}</strong>" as new customer
+            Use "<strong className="text-gray-900">{search}</strong>" as new customer
           </button>
         </div>
       )}
@@ -212,7 +212,7 @@ export default function QuickQuotePage() {
         </div>
         <div>
           <h1 className="page-title">Quick Quote</h1>
-          <p className="text-slate-400 text-xs">Standard products • Fast turnaround</p>
+          <p className="text-gray-900 text-xs">Standard products • Fast turnaround</p>
         </div>
       </div>
 
@@ -224,17 +224,17 @@ export default function QuickQuotePage() {
               onClick={() => i < step && setStep(i)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 i === step ? 'bg-blue-500/15 text-blue-400 border border-blue-500/20' :
-                i < step ? 'text-slate-300 cursor-pointer hover:text-white' :
-                'text-slate-600 cursor-not-allowed'
+                i < step ? 'text-gray-900 cursor-pointer hover:text-black' :
+                'text-gray-900 cursor-not-allowed'
               }`}
             >
               <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ${
                 i < step ? 'bg-blue-500 text-white' :
-                i === step ? 'bg-blue-500/30 text-blue-300' : 'bg-navy-600 text-slate-500'
+                i === step ? 'bg-blue-500/30 text-blue-300' : 'bg-navy-600 text-gray-900'
               }`}>{i < step ? '✓' : i + 1}</span>
               {s}
             </button>
-            {i < STEPS.length - 1 && <ChevronRight size={13} className="text-slate-700 mx-0.5" />}
+            {i < STEPS.length - 1 && <ChevronRight size={13} className="text-gray-900 mx-0.5" />}
           </React.Fragment>
         ))}
       </div>
@@ -251,7 +251,7 @@ export default function QuickQuotePage() {
         {step === 0 && (
           <div>
             <h2 className="section-title mb-1">Select Customer</h2>
-            <p className="text-slate-400 text-sm mb-5">Search existing customers or type a name to continue.</p>
+            <p className="text-gray-900 text-sm mb-5">Search existing customers or type a name to continue.</p>
             <CustomerSelector onSelect={setCustomer} selected={customer} />
           </div>
         )}
@@ -260,9 +260,9 @@ export default function QuickQuotePage() {
         {step === 1 && (
           <div>
             <h2 className="section-title mb-1">Select Product</h2>
-            <p className="text-slate-400 text-sm mb-4">Choose a product template to start the quote.</p>
+            <p className="text-gray-900 text-sm mb-4">Choose a product template to start the quote.</p>
             <div className="relative mb-4">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900" />
               <input
                 type="text"
                 value={productSearch}
@@ -274,7 +274,7 @@ export default function QuickQuotePage() {
             <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
               {Object.entries(grouped).map(([cat, items]) => (
                 <div key={cat}>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">{cat}</div>
+                  <div className="text-xs font-semibold text-gray-900 uppercase tracking-widest mb-2">{cat}</div>
                   <div className="grid gap-2">
                     {items.map(p => (
                       <button
@@ -282,15 +282,15 @@ export default function QuickQuotePage() {
                         onClick={() => setSelectedProduct(p)}
                         className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
                           selectedProduct?.id === p.id
-                            ? 'border-blue-500/50 bg-blue-500/10 text-white'
-                            : 'border-border bg-navy-800 text-slate-300 hover:border-blue-500/30 hover:bg-navy-700'
+                            ? 'border-blue-500/50 bg-blue-500/10 text-gray-900'
+                            : 'border-border bg-navy-800 text-gray-900 hover:border-blue-500/30 hover:bg-navy-700'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">{p.name}</span>
-                          <span className="text-xs text-slate-500">×{p.complexity_multiplier} complexity</span>
+                          <span className="text-xs text-gray-900">×{p.complexity_multiplier} complexity</span>
                         </div>
-                        <div className="text-xs text-slate-500 mt-0.5">
+                        <div className="text-xs text-gray-900 mt-0.5">
                           Setup: {p.setup_time}h · Run: {p.run_time_per_unit}h/unit · Finish: {p.finishing_time}h
                         </div>
                       </button>
@@ -306,7 +306,7 @@ export default function QuickQuotePage() {
         {step === 2 && (
           <div>
             <h2 className="section-title mb-1">Job Options</h2>
-            <p className="text-slate-400 text-sm mb-5">Specify quantity, material, and finish.</p>
+            <p className="text-gray-900 text-sm mb-5">Specify quantity, material, and finish.</p>
             <div className="grid gap-5">
               <div className="form-group">
                 <label className="form-label">Quantity</label>
@@ -361,21 +361,21 @@ export default function QuickQuotePage() {
         {step === 3 && (
           <div>
             <h2 className="section-title mb-1">Quote Summary</h2>
-            <p className="text-slate-400 text-sm mb-5">Review the calculated price before saving.</p>
+            <p className="text-gray-900 text-sm mb-5">Review the calculated price before saving.</p>
 
             <div className="mb-4 p-3 bg-navy-800 rounded-lg border border-border text-sm space-y-1">
-              <div className="flex justify-between"><span className="text-slate-400">Customer</span><span className="text-slate-200">{customer?.name}</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Product</span><span className="text-slate-200">{selectedProduct?.name}</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Quantity</span><span className="text-slate-200">{qty.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Material</span><span className="text-slate-200">{paper || '—'}</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Finish</span><span className="text-slate-200">{finish || '—'}</span></div>
-              {dueDate && <div className="flex justify-between"><span className="text-slate-400">Due Date</span><span className="text-slate-200">{dueDate}</span></div>}
+              <div className="flex justify-between"><span className="text-gray-900">Customer</span><span className="text-gray-900">{customer?.name}</span></div>
+              <div className="flex justify-between"><span className="text-gray-900">Product</span><span className="text-gray-900">{selectedProduct?.name}</span></div>
+              <div className="flex justify-between"><span className="text-gray-900">Quantity</span><span className="text-gray-900">{qty.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-gray-900">Material</span><span className="text-gray-900">{paper || '—'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-900">Finish</span><span className="text-gray-900">{finish || '—'}</span></div>
+              {dueDate && <div className="flex justify-between"><span className="text-gray-900">Due Date</span><span className="text-gray-900">{dueDate}</span></div>}
             </div>
 
             {loading ? (
               <div className="flex flex-col items-center py-8 gap-3">
                 <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-slate-400 text-sm">Calculating...</span>
+                <span className="text-gray-900 text-sm">Calculating...</span>
               </div>
             ) : pricing ? (
               <div className="space-y-2">
@@ -386,8 +386,8 @@ export default function QuickQuotePage() {
                   ['Overhead', pricing.overheadCost],
                 ].map(([label, val]) => val > 0 && (
                   <div key={label} className="flex justify-between text-sm">
-                    <span className="text-slate-400">{label}</span>
-                    <span className="text-slate-300 font-mono">{fmt(val)}</span>
+                    <span className="text-gray-900">{label}</span>
+                    <span className="text-gray-900 font-mono">{fmt(val)}</span>
                   </div>
                 ))}
                 {pricing.rushFee > 0 && (
@@ -397,10 +397,10 @@ export default function QuickQuotePage() {
                   </div>
                 )}
                 <div className="border-t border-border pt-3 mt-3 flex justify-between">
-                  <span className="font-display font-bold text-white text-lg">Total</span>
+                  <span className="font-display font-bold text-gray-900 text-lg">Total</span>
                   <span className="font-display font-bold text-2xl text-blue-400">{fmt(pricing.finalPrice)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-slate-500">
+                <div className="flex justify-between text-xs text-gray-900">
                   <span>Estimated Margin</span>
                   <span className={pricing.marginPercent >= 35 ? 'text-emerald-400' : 'text-amber-400'}>
                     {pricing.marginPercent?.toFixed(1)}% · {fmt(pricing.profit)} profit
@@ -416,7 +416,7 @@ export default function QuickQuotePage() {
                 </button>
               </div>
             ) : (
-              <div className="text-center py-6 text-slate-400 text-sm">Failed to calculate. Please try again.</div>
+              <div className="text-center py-6 text-gray-900 text-sm">Failed to calculate. Please try again.</div>
             )}
           </div>
         )}

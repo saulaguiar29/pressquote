@@ -11,7 +11,7 @@ const LINE_TYPES = [
   { value: 'labor', label: 'Labor', icon: Clock, color: 'text-emerald-400' },
   { value: 'design', label: 'Design', icon: Paintbrush, color: 'text-purple-400' },
   { value: 'outsourced', label: 'Outsourced', icon: Truck, color: 'text-amber-400' },
-  { value: 'equipment', label: 'Equipment', icon: Settings, color: 'text-slate-400' },
+  { value: 'equipment', label: 'Equipment', icon: Settings, color: 'text-gray-900' },
 ];
 
 const typeColors = {
@@ -19,7 +19,7 @@ const typeColors = {
   labor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   design: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   outsourced: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  equipment: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+  equipment: 'bg-slate-500/10 text-gray-900 border-slate-500/20',
 };
 
 function LineItemRow({ item, index, onChange, onRemove, materials, outsourcedItems }) {
@@ -66,12 +66,12 @@ function LineItemRow({ item, index, onChange, onRemove, materials, outsourcedIte
         />
       </div>
       <div className="col-span-3 sm:col-span-1 flex items-center justify-end">
-        <span className="text-xs font-mono text-slate-300">
+        <span className="text-xs font-mono text-gray-900">
           ${((item.quantity || 0) * (item.unit_cost || 0)).toFixed(2)}
         </span>
       </div>
       <div className="col-span-1 flex items-center justify-center">
-        <button onClick={() => onRemove(index)} className="text-slate-600 hover:text-red-400 transition-colors p-0.5">
+        <button onClick={() => onRemove(index)} className="text-gray-900 hover:text-red-400 transition-colors p-0.5">
           <Trash2 size={13} />
         </button>
       </div>
@@ -191,7 +191,7 @@ export default function CustomJobPage() {
         </div>
         <div>
           <h1 className="page-title">Custom Job</h1>
-          <p className="text-slate-400 text-xs">Complex work with full line-item control</p>
+          <p className="text-gray-900 text-xs">Complex work with full line-item control</p>
         </div>
       </div>
 
@@ -236,15 +236,15 @@ export default function CustomJobPage() {
           <div className="card p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="section-title text-base">Line Items</h2>
-              <div className="text-xs text-slate-400 font-mono">
-                Subtotal: <span className="text-white font-semibold">{fmt(lineTotal)}</span>
+              <div className="text-xs text-gray-900 font-mono">
+                Subtotal: <span className="text-gray-900 font-semibold">{fmt(lineTotal)}</span>
               </div>
             </div>
 
             {/* Column headers */}
             <div className="hidden sm:grid grid-cols-12 gap-2 mb-1 px-0">
               {['Type', 'Description', 'Qty', 'Unit Cost', 'Total', ''].map((h, i) => (
-                <div key={i} className={`text-xs text-slate-600 font-medium uppercase tracking-wider ${
+                <div key={i} className={`text-xs text-gray-900 font-medium uppercase tracking-wider ${
                   i === 0 ? 'col-span-2' : i === 1 ? 'col-span-4' : i === 2 ? 'col-span-2' : i === 3 ? 'col-span-2' : i === 4 ? 'col-span-1' : 'col-span-1'
                 }`}>{h}</div>
               ))}
@@ -265,7 +265,7 @@ export default function CustomJobPage() {
             </div>
 
             {lineItems.length === 0 && (
-              <div className="text-center py-6 text-slate-500 text-sm">No line items yet. Add one below.</div>
+              <div className="text-center py-6 text-gray-900 text-sm">No line items yet. Add one below.</div>
             )}
 
             {/* Add buttons */}
@@ -294,10 +294,10 @@ export default function CustomJobPage() {
                 const { materialCost, allLaborHours, allDesignHours, outsourcedCost, lineTotal, laborCostRaw, designCostRaw } = getTotals();
                 return (
                   <>
-                    <div className="flex justify-between text-sm"><span className="text-slate-400">Materials</span><span className="text-slate-300 font-mono">{fmt(materialCost)}</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-slate-400">Labor ({allLaborHours.toFixed(1)}h)</span><span className="text-slate-300 font-mono">{fmt(laborCostRaw)}</span></div>
-                    {allDesignHours > 0 && <div className="flex justify-between text-sm"><span className="text-slate-400">Design ({allDesignHours.toFixed(1)}h)</span><span className="text-slate-300 font-mono">{fmt(designCostRaw)}</span></div>}
-                    {parseFloat(designHours) > 0 && <div className="flex justify-between text-sm"><span className="text-slate-400">+Design overhead</span><span className="text-slate-300 font-mono">{designHours}h</span></div>}
+                    <div className="flex justify-between text-sm"><span className="text-gray-900">Materials</span><span className="text-gray-900 font-mono">{fmt(materialCost)}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-gray-900">Labor ({allLaborHours.toFixed(1)}h)</span><span className="text-gray-900 font-mono">{fmt(laborCostRaw)}</span></div>
+                    {allDesignHours > 0 && <div className="flex justify-between text-sm"><span className="text-gray-900">Design ({allDesignHours.toFixed(1)}h)</span><span className="text-gray-900 font-mono">{fmt(designCostRaw)}</span></div>}
+                    {parseFloat(designHours) > 0 && <div className="flex justify-between text-sm"><span className="text-gray-900">+Design overhead</span><span className="text-gray-900 font-mono">{designHours}h</span></div>}
                     {outsourcedCost > 0 && <div className="flex justify-between text-sm"><span className="text-amber-400">Outsourced</span><span className="text-amber-400 font-mono">{fmt(outsourcedCost)}</span></div>}
                   </>
                 );
@@ -310,7 +310,7 @@ export default function CustomJobPage() {
 
             {pricing && (
               <div className="space-y-2 pt-4 border-t border-border">
-                <div className="flex justify-between text-sm"><span className="text-slate-400">Overhead</span><span className="text-slate-300 font-mono">{fmt(pricing.overheadCost)}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-900">Overhead</span><span className="text-gray-900 font-mono">{fmt(pricing.overheadCost)}</span></div>
                 {pricing.rushFee > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-amber-400">Rush (+{pricing.rushPercent}%)</span>
@@ -318,10 +318,10 @@ export default function CustomJobPage() {
                   </div>
                 )}
                 <div className="flex justify-between pt-3 border-t border-border">
-                  <span className="font-display font-bold text-white text-lg">Total</span>
+                  <span className="font-display font-bold text-gray-900 text-lg">Total</span>
                   <span className="font-display font-bold text-xl text-blue-400">{fmt(pricing.finalPrice)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-slate-500">
+                <div className="flex justify-between text-xs text-gray-900">
                   <span>Margin</span>
                   <span className={pricing.marginPercent >= 35 ? 'text-emerald-400' : 'text-amber-400'}>
                     {pricing.marginPercent?.toFixed(1)}% · {fmt(pricing.profit)} profit
@@ -339,7 +339,7 @@ export default function CustomJobPage() {
           {/* Quick reference: outsourced items */}
           {outsourcedItems.length > 0 && (
             <div className="card p-4">
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Outsourced Vendor Costs</h3>
+              <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Outsourced Vendor Costs</h3>
               <div className="space-y-2">
                 {outsourcedItems.slice(0, 5).map(item => (
                   <button
@@ -348,10 +348,10 @@ export default function CustomJobPage() {
                     className="w-full text-left px-2.5 py-2 rounded-md hover:bg-navy-700 transition-colors group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-300">{item.item_name}</span>
+                      <span className="text-xs text-gray-900">{item.item_name}</span>
                       <span className="text-xs font-mono text-amber-400">{fmt(item.base_cost)}</span>
                     </div>
-                    <div className="text-xs text-slate-600">{item.supplier_name} · {item.lead_time}d lead</div>
+                    <div className="text-xs text-gray-900">{item.supplier_name} · {item.lead_time}d lead</div>
                   </button>
                 ))}
               </div>

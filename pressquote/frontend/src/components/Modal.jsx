@@ -23,8 +23,8 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
       <div className={`relative bg-card border border-border rounded-xl shadow-card w-full ${sizes[size]} max-h-[90vh] flex flex-col`}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
-          <h2 className="font-display font-semibold text-white text-base">{title}</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-300 transition-colors p-0.5">
+          <h2 className="font-display font-semibold text-gray-900 text-base">{title}</h2>
+          <button onClick={onClose} className="text-gray-900 hover:text-gray-900 transition-colors p-0.5">
             <X size={16} />
           </button>
         </div>

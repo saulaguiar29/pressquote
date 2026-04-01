@@ -93,7 +93,7 @@ export default function SuppliersPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="page-title">Suppliers &amp; Outsourced</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Manage vendor costs for quotes</p>
+          <p className="text-gray-900 text-sm mt-0.5">Manage vendor costs for quotes</p>
         </div>
         <button onClick={() => openCreate(tab === 'outsourced' ? 'item' : 'supplier')} className="btn-primary">
           <Plus size={14} /> Add {tab === 'outsourced' ? 'Item' : 'Supplier'}
@@ -107,7 +107,7 @@ export default function SuppliersPage() {
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
-              tab === t ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-300'
+              tab === t ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-900 hover:text-gray-900'
             }`}
           >
             {t === 'outsourced' ? `Outsourced Items (${outsourced.length})` : `Suppliers (${suppliers.length})`}
@@ -116,11 +116,11 @@ export default function SuppliersPage() {
       </div>
 
       {loading ? (
-        <div className="card p-8 text-center text-slate-400">Loading...</div>
+        <div className="card p-8 text-center text-gray-900">Loading...</div>
       ) : tab === 'outsourced' ? (
         <div className="card overflow-hidden">
           {outsourced.length === 0 ? (
-            <div className="p-12 text-center"><Truck size={40} className="text-slate-600 mx-auto mb-3" /><p className="text-slate-400">No outsourced items yet.</p></div>
+            <div className="p-12 text-center"><Truck size={40} className="text-gray-900 mx-auto mb-3" /><p className="text-gray-900">No outsourced items yet.</p></div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -139,13 +139,13 @@ export default function SuppliersPage() {
                   {outsourced.map(item => (
                     <tr key={item.id} className="table-row">
                       <td className="table-cell">
-                        <div className="font-medium text-slate-200">{item.item_name}</div>
+                        <div className="font-medium text-gray-900">{item.item_name}</div>
                         {item.order_link && <a href={item.order_link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 flex items-center gap-1 mt-0.5" onClick={e => e.stopPropagation()}>Order link <ExternalLink size={10} /></a>}
                       </td>
-                      <td className="table-cell text-slate-400 hidden md:table-cell">{item.supplier_name}</td>
-                      <td className="table-cell text-right font-mono text-sm text-slate-200">{fmt(item.base_cost)}</td>
-                      <td className="table-cell text-right font-mono text-sm text-slate-400 hidden md:table-cell">{fmt(item.shipping_cost)}</td>
-                      <td className="table-cell text-right font-mono text-sm font-semibold text-white">{fmt((item.base_cost || 0) + (item.shipping_cost || 0))}</td>
+                      <td className="table-cell text-gray-900 hidden md:table-cell">{item.supplier_name}</td>
+                      <td className="table-cell text-right font-mono text-sm text-gray-900">{fmt(item.base_cost)}</td>
+                      <td className="table-cell text-right font-mono text-sm text-gray-900 hidden md:table-cell">{fmt(item.shipping_cost)}</td>
+                      <td className="table-cell text-right font-mono text-sm font-semibold text-gray-900">{fmt((item.base_cost || 0) + (item.shipping_cost || 0))}</td>
                       <td className="table-cell text-center hidden lg:table-cell">
                         <span className={`badge ${item.lead_time <= 3 ? 'bg-emerald-500/10 text-emerald-400' : item.lead_time <= 7 ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'}`}>
                           {item.lead_time}d
@@ -167,7 +167,7 @@ export default function SuppliersPage() {
       ) : (
         <div className="card overflow-hidden">
           {suppliers.length === 0 ? (
-            <div className="p-12 text-center"><Truck size={40} className="text-slate-600 mx-auto mb-3" /><p className="text-slate-400">No suppliers yet.</p></div>
+            <div className="p-12 text-center"><Truck size={40} className="text-gray-900 mx-auto mb-3" /><p className="text-gray-900">No suppliers yet.</p></div>
           ) : (
             <table className="w-full">
               <thead>
@@ -182,10 +182,10 @@ export default function SuppliersPage() {
               <tbody>
                 {suppliers.map(s => (
                   <tr key={s.id} className="table-row">
-                    <td className="table-cell font-medium text-slate-200">{s.name}</td>
-                    <td className="table-cell text-slate-400 text-sm hidden md:table-cell">{s.contact_email || '—'}</td>
-                    <td className="table-cell text-slate-400 text-sm hidden md:table-cell">{s.contact_phone || '—'}</td>
-                    <td className="table-cell text-slate-400 text-sm hidden lg:table-cell">{s.notes || '—'}</td>
+                    <td className="table-cell font-medium text-gray-900">{s.name}</td>
+                    <td className="table-cell text-gray-900 text-sm hidden md:table-cell">{s.contact_email || '—'}</td>
+                    <td className="table-cell text-gray-900 text-sm hidden md:table-cell">{s.contact_phone || '—'}</td>
+                    <td className="table-cell text-gray-900 text-sm hidden lg:table-cell">{s.notes || '—'}</td>
                     <td className="table-cell text-right">
                       <div className="flex justify-end gap-1">
                         <button onClick={() => openEdit(s, 'supplier')} className="btn-ghost p-1.5"><Edit2 size={12} /></button>

@@ -40,13 +40,13 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-500/10 border border-blue-500/20 rounded-2xl mb-4 shadow-glow">
             <Printer size={26} className="text-blue-400" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-white">PressQuote</h1>
-          <p className="text-slate-400 text-sm mt-1">Print Shop Quoting Software</p>
+          <h1 className="font-display text-3xl font-bold text-gray-900">PressQuote</h1>
+          <p className="text-gray-900 text-sm mt-1">Print Shop Quoting Software</p>
         </div>
 
         {/* Card */}
         <div className="card p-6">
-          <h2 className="font-display text-lg font-semibold text-white mb-5">Sign in to your account</h2>
+          <h2 className="font-display text-lg font-semibold text-gray-900 mb-5">Sign in to your account</h2>
 
           {error && (
             <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5 mb-4">
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-900 transition-colors"
                 >
                   {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
@@ -105,7 +105,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-xs text-slate-500 text-center">
+            <p className="text-xs text-gray-900 text-center">
               Demo: admin@pressquote.com / password123
             </p>
           </div>

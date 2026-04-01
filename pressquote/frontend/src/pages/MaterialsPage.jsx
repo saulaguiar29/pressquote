@@ -60,7 +60,7 @@ export default function MaterialsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="page-title">Materials</h1>
-          <p className="text-slate-400 text-sm mt-0.5">{materials.length} items in database</p>
+          <p className="text-gray-900 text-sm mt-0.5">{materials.length} items in database</p>
         </div>
         <button onClick={openCreate} className="btn-primary">
           <Plus size={14} /> Add Material
@@ -78,11 +78,11 @@ export default function MaterialsPage() {
 
       <div className="card overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-slate-400">Loading materials...</div>
+          <div className="p-8 text-center text-gray-900">Loading materials...</div>
         ) : materials.length === 0 ? (
           <div className="p-12 text-center">
-            <Package size={40} className="text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400">No materials yet.</p>
+            <Package size={40} className="text-gray-900 mx-auto mb-3" />
+            <p className="text-gray-900">No materials yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -104,12 +104,12 @@ export default function MaterialsPage() {
                   const low = m.reorder_point > 0 && m.inventory_qty <= m.reorder_point;
                   return (
                     <tr key={m.id} className="table-row">
-                      <td className="table-cell font-medium text-slate-200">{m.name}</td>
-                      <td className="table-cell text-slate-400 hidden md:table-cell">{m.unit_type}</td>
-                      <td className="table-cell text-right font-mono text-sm text-slate-200">{fmt(m.unit_cost)}</td>
-                      <td className="table-cell text-slate-400 hidden lg:table-cell">{m.supplier || '—'}</td>
-                      <td className="table-cell text-right text-slate-300 hidden lg:table-cell">{parseFloat(m.inventory_qty || 0).toLocaleString()}</td>
-                      <td className="table-cell text-right text-slate-400 hidden lg:table-cell">{parseFloat(m.reorder_point || 0).toLocaleString()}</td>
+                      <td className="table-cell font-medium text-gray-900">{m.name}</td>
+                      <td className="table-cell text-gray-900 hidden md:table-cell">{m.unit_type}</td>
+                      <td className="table-cell text-right font-mono text-sm text-gray-900">{fmt(m.unit_cost)}</td>
+                      <td className="table-cell text-gray-900 hidden lg:table-cell">{m.supplier || '—'}</td>
+                      <td className="table-cell text-right text-gray-900 hidden lg:table-cell">{parseFloat(m.inventory_qty || 0).toLocaleString()}</td>
+                      <td className="table-cell text-right text-gray-900 hidden lg:table-cell">{parseFloat(m.reorder_point || 0).toLocaleString()}</td>
                       <td className="table-cell text-center">
                         <span className={`badge ${low ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/10 text-emerald-500'}`}>
                           {low ? '⚠ Low' : '✓ OK'}
