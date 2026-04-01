@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
-import { Zap, ChevronRight, ChevronLeft, Calculator, User, Package, Search, X, AlertCircle } from 'lucide-react';
+import { Zap, ChevronRight, ChevronLeft, Calculator, Package, Search, AlertCircle } from 'lucide-react';
 
 const PAPER_OPTIONS = [
   '100lb Gloss Cover', '80lb Gloss Text', '60lb Uncoated Offset',
@@ -14,75 +14,112 @@ const FINISH_OPTIONS = [
 ];
 
 function CustomerSelector({ onSelect, selected }) {
-  const [search, setSearch] = useState('');
+  const [name, setName] = useState(selected?.name || '');
+  const [company, setCompany] = useState(selected?.company || '');
+  const [email, setEmail] = useState(selected?.email || '');
+  const [phone, setPhone] = useState(selected?.phone || '');
   const [results, setResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [customerId, setCustomerId] = useState(selected?.id || null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    if (search.length < 1) { setResults([]); return; }
+    if (name.length < 1) { setResults([]); setShowDropdown(false); return; }
     const t = setTimeout(() => {
-      api.getCustomers(search).then(setResults).catch(() => {});
+      api.getCustomers(name).then(r => { setResults(r); if (r.length > 0) setShowDropdown(true); }).catch(() => {});
     }, 200);
     return () => clearTimeout(t);
-  }, [search]);
+  }, [name]);
 
-  if (selected) return (
-    <div className="flex items-center gap-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm">
-        {selected.name[0]}
-      </div>
-      <div className="flex-1">
-        <div className="text-sm font-medium text-gray-900">{selected.name}</div>
-        {selected.company && <div className="text-xs text-gray-900">{selected.company}</div>}
-      </div>
-      <button onClick={() => onSelect(null)} className="text-gray-900 hover:text-gray-900 p-1">
-        <X size={14} />
-      </button>
-    </div>
-  );
+  useEffect(() => {
+    const handler = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setShowDropdown(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const notify = (n, co, em, ph, id) => {
+    onSelect(n.trim() ? { id, name: n.trim(), company: co, email: em, phone: ph } : null);
+  };
+
+  const handlePickResult = (c) => {
+    setName(c.name); setCompany(c.company || ''); setEmail(c.email || ''); setPhone(c.phone || '');
+    setCustomerId(c.id); setShowDropdown(false);
+    onSelect({ id: c.id, name: c.name, company: c.company || '', email: c.email || '', phone: c.phone || '' });
+  };
 
   return (
-    <div className="relative">
-      <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900" />
+    <div className="space-y-4">
+      <div className="form-group" ref={containerRef}>
+        <label className="form-label">Customer Name <span className="text-red-500">*</span></label>
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            value={name}
+            onChange={e => { const v = e.target.value; setName(v); setCustomerId(null); notify(v, company, email, phone, null); }}
+            onFocus={() => results.length > 0 && setShowDropdown(true)}
+            placeholder="Start typing to search existing customers..."
+            className="form-input pl-9"
+          />
+          {showDropdown && results.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-forest-100 rounded-lg shadow-card overflow-hidden">
+              {results.slice(0, 6).map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => handlePickResult(c)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-forest-50 text-left transition-colors border-b border-forest-50 last:border-0"
+                >
+                  <div className="w-7 h-7 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 text-xs font-bold shrink-0">
+                    {c.name[0]}
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{c.name}</div>
+                    {c.company && <div className="text-xs text-gray-600">{c.company}</div>}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Business Name</label>
         <input
           type="text"
-          value={search}
-          onChange={e => { setSearch(e.target.value); setShowDropdown(true); }}
-          onFocus={() => setShowDropdown(true)}
-          placeholder="Search customers..."
-          className="form-input pl-9"
+          value={company}
+          onChange={e => { setCompany(e.target.value); notify(name, e.target.value, email, phone, customerId); }}
+          placeholder="Company or business name"
+          className="form-input"
         />
       </div>
-      {showDropdown && results.length > 0 && (
-        <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-card overflow-hidden">
-          {results.slice(0, 6).map(c => (
-            <button
-              key={c.id}
-              onClick={() => { onSelect(c); setSearch(''); setShowDropdown(false); }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-navy-600 text-left transition-colors"
-            >
-              <div className="w-7 h-7 rounded-full bg-navy-600 flex items-center justify-center text-gray-900 text-xs font-bold shrink-0">
-                {c.name[0]}
-              </div>
-              <div>
-                <div className="text-sm text-gray-900">{c.name}</div>
-                {c.company && <div className="text-xs text-gray-900">{c.company}</div>}
-              </div>
-            </button>
-          ))}
-          <button
-            onClick={() => {
-              const name = search.trim();
-              if (name) { onSelect({ name, id: null }); setSearch(''); setShowDropdown(false); }
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-navy-600 text-gray-900 text-sm border-t border-border transition-colors"
-          >
-            <User size={12} />
-            Use "<strong className="text-gray-900">{search}</strong>" as new customer
-          </button>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="form-group">
+          <label className="form-label">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => { setEmail(e.target.value); notify(name, company, e.target.value, phone, customerId); }}
+            placeholder="customer@example.com"
+            className="form-input"
+          />
         </div>
-      )}
+        <div className="form-group">
+          <label className="form-label">Phone</label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={e => { setPhone(e.target.value); notify(name, company, email, e.target.value, customerId); }}
+            placeholder="(555) 000-0000"
+            className="form-input"
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -250,8 +287,8 @@ export default function QuickQuotePage() {
         {/* STEP 0 — Customer */}
         {step === 0 && (
           <div>
-            <h2 className="section-title mb-1">Select Customer</h2>
-            <p className="text-gray-900 text-sm mb-5">Search existing customers or type a name to continue.</p>
+            <h2 className="section-title mb-1">Customer Info</h2>
+            <p className="text-gray-900 text-sm mb-5">Enter customer details. Type a name to search existing customers.</p>
             <CustomerSelector onSelect={setCustomer} selected={customer} />
           </div>
         )}
