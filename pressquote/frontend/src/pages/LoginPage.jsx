@@ -27,12 +27,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-900 flex items-center justify-center px-4">
-      {/* Background grid */}
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'linear-gradient(#4b8eff 1px, transparent 1px), linear-gradient(90deg, #4b8eff 1px, transparent 1px)',
-        backgroundSize: '40px 40px'
-      }} />
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #16a34a 0%, #dcfce7 50%, #ffffff 100%)' }}>
 
       <div className="relative w-full max-w-sm">
         {/* Logo */}
