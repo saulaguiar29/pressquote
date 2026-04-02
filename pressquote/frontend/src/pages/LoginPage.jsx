@@ -6,8 +6,8 @@ import { Printer, Eye, EyeOff, AlertCircle } from "lucide-react";
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@pressquote.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,8 +37,8 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-500/10 border border-blue-500/20 rounded-2xl mb-4 shadow-glow">
-            <Printer size={26} className="text-blue-400" />
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-white/80 border border-white/60 rounded-2xl mb-4 shadow-lg">
+            <Printer size={26} className="text-green-700" />
           </div>
           <h1 className="font-display text-3xl font-bold text-gray-900">
             PressQuote
