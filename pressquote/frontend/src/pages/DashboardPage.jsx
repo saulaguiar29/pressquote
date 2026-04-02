@@ -1,21 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api } from '../utils/api';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { api } from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 import {
-  FileText, TrendingUp, DollarSign, CheckCircle,
-  Zap, Wrench, ArrowRight, Clock, BarChart3
-} from 'lucide-react';
+  FileText,
+  TrendingUp,
+  DollarSign,
+  CheckCircle,
+  Zap,
+  Wrench,
+  ArrowRight,
+  Clock,
+  BarChart3,
+} from "lucide-react";
 
 const statusColors = {
-  draft: 'badge-draft',
-  sent: 'badge-sent',
-  accepted: 'badge-accepted',
-  declined: 'badge-declined',
+  draft: "badge-draft",
+  sent: "badge-sent",
+  accepted: "badge-accepted",
+  declined: "badge-declined",
 };
 
 function fmt(n) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n || 0);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(n || 0);
 }
 
 export default function DashboardPage() {
@@ -25,27 +36,33 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getQuoteStats()
+    api
+      .getQuoteStats()
       .then(setStats)
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="page-title">{greeting}, {user?.name?.split(' ')[0]} 👋</h1>
-        <p className="text-gray-900 mt-1 text-sm">Here's what's happening with your quotes today.</p>
+        <h1 className="page-title">
+          {greeting}, {user?.name?.split(" ")[0]}{" "}
+        </h1>
+        <p className="text-gray-900 mt-1 text-sm">
+          Here's what's happening with your quotes today.
+        </p>
       </div>
 
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
         <button
-          onClick={() => navigate('/quotes/quick')}
+          onClick={() => navigate("/quotes/quick")}
           className="card p-5 text-left hover:border-blue-500/40 hover:shadow-glow transition-all group"
         >
           <div className="flex items-start gap-4">
@@ -53,15 +70,22 @@ export default function DashboardPage() {
               <Zap size={18} className="text-blue-400" />
             </div>
             <div className="flex-1">
-              <div className="font-display font-semibold text-gray-900 text-base">Quick Quote</div>
-              <div className="text-gray-900 text-sm mt-0.5">Standard products — fast &amp; simple</div>
+              <div className="font-display font-semibold text-gray-900 text-base">
+                Quick Quote
+              </div>
+              <div className="text-gray-900 text-sm mt-0.5">
+                Standard products — fast &amp; simple
+              </div>
             </div>
-            <ArrowRight size={16} className="text-gray-900 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all mt-1" />
+            <ArrowRight
+              size={16}
+              className="text-gray-900 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all mt-1"
+            />
           </div>
         </button>
 
         <button
-          onClick={() => navigate('/quotes/custom')}
+          onClick={() => navigate("/quotes/custom")}
           className="card p-5 text-left hover:border-blue-500/40 hover:shadow-glow transition-all group"
         >
           <div className="flex items-start gap-4">
@@ -69,10 +93,17 @@ export default function DashboardPage() {
               <Wrench size={18} className="text-indigo-400" />
             </div>
             <div className="flex-1">
-              <div className="font-display font-semibold text-gray-900 text-base">Custom Job</div>
-              <div className="text-gray-900 text-sm mt-0.5">Complex work with line items</div>
+              <div className="font-display font-semibold text-gray-900 text-base">
+                Custom Job
+              </div>
+              <div className="text-gray-900 text-sm mt-0.5">
+                Complex work with line items
+              </div>
             </div>
-            <ArrowRight size={16} className="text-gray-900 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all mt-1" />
+            <ArrowRight
+              size={16}
+              className="text-gray-900 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all mt-1"
+            />
           </div>
         </button>
       </div>
@@ -91,38 +122,54 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
           <div className="stat-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">Total Quotes</span>
+              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">
+                Total Quotes
+              </span>
               <FileText size={14} className="text-gray-900" />
             </div>
-            <div className="font-display text-3xl font-bold text-gray-900">{stats?.total || 0}</div>
-            <div className="text-gray-900 text-xs">{stats?.thisMonth || 0} this month</div>
+            <div className="font-display text-3xl font-bold text-gray-900">
+              {stats?.total || 0}
+            </div>
+            <div className="text-gray-900 text-xs">
+              {stats?.thisMonth || 0} this month
+            </div>
           </div>
 
           <div className="stat-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">Sent</span>
+              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">
+                Sent
+              </span>
               <CheckCircle size={14} className="text-emerald-500" />
             </div>
-            <div className="font-display text-3xl font-bold text-gray-900">{stats?.sent || 0}</div>
+            <div className="font-display text-3xl font-bold text-gray-900">
+              {stats?.sent || 0}
+            </div>
             <div className="text-emerald-500 text-xs">awaiting response</div>
           </div>
 
           <div className="stat-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">Revenue</span>
+              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">
+                Revenue
+              </span>
               <DollarSign size={14} className="text-blue-400" />
             </div>
-            <div className="font-display text-2xl font-bold text-gray-900">{fmt(stats?.totalRevenue)}</div>
+            <div className="font-display text-2xl font-bold text-gray-900">
+              {fmt(stats?.totalRevenue)}
+            </div>
             <div className="text-gray-900 text-xs">sent + accepted</div>
           </div>
 
           <div className="stat-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">Avg Margin</span>
+              <span className="text-xs text-gray-900 font-medium uppercase tracking-wider">
+                Avg Margin
+              </span>
               <TrendingUp size={14} className="text-blue-400" />
             </div>
             <div className="font-display text-3xl font-bold text-gray-900">
-              {stats?.avgMargin ? stats.avgMargin.toFixed(1) : '—'}%
+              {stats?.avgMargin ? stats.avgMargin.toFixed(1) : "—"}%
             </div>
             <div className="text-gray-900 text-xs">across all quotes</div>
           </div>
@@ -136,19 +183,29 @@ export default function DashboardPage() {
             <Clock size={15} className="text-gray-900" />
             <span className="section-title text-base">Recent Quotes</span>
           </div>
-          <button onClick={() => navigate('/quotes')} className="btn-ghost text-xs py-1.5 px-2.5">
+          <button
+            onClick={() => navigate("/quotes")}
+            className="btn-ghost text-xs py-1.5 px-2.5"
+          >
             View all <ArrowRight size={12} />
           </button>
         </div>
 
         {loading ? (
           <div className="p-6 space-y-3">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-12 bg-navy-700/50 rounded animate-pulse" />)}
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="h-12 bg-navy-700/50 rounded animate-pulse"
+              />
+            ))}
           </div>
         ) : !stats?.recent?.length ? (
           <div className="p-10 text-center">
             <BarChart3 size={36} className="text-gray-900 mx-auto mb-3" />
-            <p className="text-gray-900 text-sm">No quotes yet. Create your first one above!</p>
+            <p className="text-gray-900 text-sm">
+              No quotes yet. Create your first one above!
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -157,35 +214,59 @@ export default function DashboardPage() {
                 <tr className="border-b border-border/50">
                   <th className="table-header text-left">Quote #</th>
                   <th className="table-header text-left">Customer</th>
-                  <th className="table-header text-left hidden md:table-cell">Project</th>
-                  <th className="table-header text-left hidden md:table-cell">Type</th>
+                  <th className="table-header text-left hidden md:table-cell">
+                    Project
+                  </th>
+                  <th className="table-header text-left hidden md:table-cell">
+                    Type
+                  </th>
                   <th className="table-header text-right">Price</th>
                   <th className="table-header text-center">Status</th>
-                  <th className="table-header text-center hidden md:table-cell">Margin</th>
+                  <th className="table-header text-center hidden md:table-cell">
+                    Margin
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {stats.recent.map(q => (
+                {stats.recent.map((q) => (
                   <tr
                     key={q.id}
                     className="table-row cursor-pointer"
                     onClick={() => navigate(`/quotes/${q.id}/review`)}
                   >
-                    <td className="table-cell font-mono text-blue-400 text-xs">{q.quote_number}</td>
-                    <td className="table-cell text-gray-900 font-medium">{q.customer_name}</td>
-                    <td className="table-cell text-gray-900 hidden md:table-cell">{q.project_name || '—'}</td>
+                    <td className="table-cell font-mono text-blue-400 text-xs">
+                      {q.quote_number}
+                    </td>
+                    <td className="table-cell text-gray-900 font-medium">
+                      {q.customer_name}
+                    </td>
+                    <td className="table-cell text-gray-900 hidden md:table-cell">
+                      {q.project_name || "—"}
+                    </td>
                     <td className="table-cell hidden md:table-cell">
-                      <span className={`badge ${q.type === 'quick' ? 'bg-blue-500/10 text-blue-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
-                        {q.type === 'quick' ? <Zap size={10} /> : <Wrench size={10} />}
+                      <span
+                        className={`badge ${q.type === "quick" ? "bg-blue-500/10 text-blue-400" : "bg-indigo-500/10 text-indigo-400"}`}
+                      >
+                        {q.type === "quick" ? (
+                          <Zap size={10} />
+                        ) : (
+                          <Wrench size={10} />
+                        )}
                         {q.type}
                       </span>
                     </td>
-                    <td className="table-cell text-right font-display font-semibold text-gray-900">{fmt(q.final_price)}</td>
+                    <td className="table-cell text-right font-display font-semibold text-gray-900">
+                      {fmt(q.final_price)}
+                    </td>
                     <td className="table-cell text-center">
-                      <span className={statusColors[q.status] || 'badge-draft'}>{q.status}</span>
+                      <span className={statusColors[q.status] || "badge-draft"}>
+                        {q.status}
+                      </span>
                     </td>
                     <td className="table-cell text-center text-gray-900 hidden md:table-cell text-sm font-mono">
-                      {q.margin_percent ? q.margin_percent.toFixed(1) + '%' : '—'}
+                      {q.margin_percent
+                        ? q.margin_percent.toFixed(1) + "%"
+                        : "—"}
                     </td>
                   </tr>
                 ))}
