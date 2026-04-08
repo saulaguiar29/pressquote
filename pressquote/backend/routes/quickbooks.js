@@ -130,6 +130,7 @@ router.get('/auth-url', authMiddleware, (req, res) => {
       scope: [OAuthClient.scopes.Accounting],
       state: 'pressquote',
     });
+    console.log('QB Auth URL:', url);
     res.json({ url });
   } catch (err) {
     res.status(500).json({ error: err.message });
