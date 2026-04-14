@@ -78,7 +78,11 @@ const DESCRIPTION_OPTIONS = {
   equipment: ['Large format printer', 'Digital press', 'Offset press', 'Die cutter', 'Laminator', 'Folder', 'Cutter'],
 };
 
+const OTHER = '__other__';
+
 function LineItemRow({ item, index, onChange, onRemove, materials, outsourcedItems }) {
+  const [customMode, setCustomMode] = useState(false);
+
   const getDescriptionOptions = () => {
     if (item.type === 'material') return materials.map(m => m.name).filter(Boolean);
     if (item.type === 'outsourced') return outsourcedItems.map(i => i.item_name).filter(Boolean);
@@ -87,35 +91,64 @@ function LineItemRow({ item, index, onChange, onRemove, materials, outsourcedIte
 
   const options = getDescriptionOptions();
 
+  const handleDescriptionSelect = (value) => {
+    if (value === OTHER) {
+      setCustomMode(true);
+      onChange(index, 'description', '');
+    } else {
+      setCustomMode(false);
+      onChange(index, 'description', value);
+    }
+  };
+
+  // When type changes, reset custom mode
+  const handleTypeChange = (value) => {
+    setCustomMode(false);
+    onChange(index, 'type', value);
+  };
+
   return (
     <div className="grid grid-cols-12 gap-2 items-start py-2 border-b border-border/40 last:border-0">
       <div className="col-span-12 sm:col-span-2">
         <select
           value={item.type}
-          onChange={e => onChange(index, 'type', e.target.value)}
+          onChange={e => handleTypeChange(e.target.value)}
           className="form-input text-xs py-1.5"
         >
           {LINE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
       </div>
       <div className="col-span-12 sm:col-span-4">
-        {options.length > 0 ? (
+        {options.length > 0 && !customMode ? (
           <select
             value={item.description}
-            onChange={e => onChange(index, 'description', e.target.value)}
+            onChange={e => handleDescriptionSelect(e.target.value)}
             className="form-input text-xs py-1.5"
           >
             <option value="">Select...</option>
             {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            <option value={OTHER}>Other...</option>
           </select>
         ) : (
-          <input
-            type="text"
-            value={item.description}
-            onChange={e => onChange(index, 'description', e.target.value)}
-            placeholder="Description..."
-            className="form-input text-xs py-1.5"
-          />
+          <div className="flex gap-1">
+            <input
+              type="text"
+              value={item.description}
+              onChange={e => onChange(index, 'description', e.target.value)}
+              placeholder="Enter description..."
+              className="form-input text-xs py-1.5 flex-1"
+              autoFocus={customMode}
+            />
+            {customMode && (
+              <button
+                onClick={() => { setCustomMode(false); onChange(index, 'description', ''); }}
+                className="text-gray-900 hover:text-gray-300 transition-colors px-1 text-xs"
+                title="Back to list"
+              >
+                ↩
+              </button>
+            )}
+          </div>
         )}
       </div>
       <div className="col-span-4 sm:col-span-2">

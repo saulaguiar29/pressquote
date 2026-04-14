@@ -50,7 +50,7 @@ export default function Layout() {
       {/* Quick action */}
       <div className="px-3 py-3 border-b border-forest-800">
         <button
-          onClick={() => { navigate('/quotes/quick'); setMobileOpen(false); }}
+          onClick={() => { navigate('/quotes/custom'); setMobileOpen(false); }}
           className="btn-primary w-full justify-center text-sm py-2.5"
         >
           <Plus size={15} />
