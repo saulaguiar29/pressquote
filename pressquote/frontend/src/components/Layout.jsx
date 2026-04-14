@@ -12,7 +12,7 @@ const navItems = [
   { path: '/quotes', label: 'Quotes', icon: FileText },
   { divider: true, label: 'Create' },
   { path: '/quotes/quick', label: 'Quick Quote', icon: Zap },
-  { path: '/quotes/custom', label: 'Custom Job', icon: Wrench },
+  { path: '/quotes/custom', label: 'New Quote', icon: Wrench },
   { divider: true, label: 'Admin' },
   { path: '/materials', label: 'Materials', icon: Package },
   { path: '/products', label: 'Products', icon: Layers },

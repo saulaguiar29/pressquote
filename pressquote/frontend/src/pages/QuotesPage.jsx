@@ -53,7 +53,7 @@ export default function QuotesPage() {
             <Zap size={14} /> Quick Quote
           </button>
           <button onClick={() => navigate('/quotes/custom')} className="btn-secondary">
-            <Wrench size={14} /> Custom Job
+            <Wrench size={14} /> New Quote
           </button>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function QuotesPage() {
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="form-input w-36 py-2">
           <option value="">All Types</option>
           <option value="quick">Quick Quote</option>
-          <option value="custom">Custom Job</option>
+          <option value="custom">New Quote</option>
         </select>
       </div>
 

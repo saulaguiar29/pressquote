@@ -338,7 +338,7 @@ PrintCo`;
             <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Job Details</h3>
             <div className="space-y-2 text-sm">
               {[
-                ['Type', quote.type === 'quick' ? 'Quick Quote' : 'Custom Job'],
+                ['Type', quote.type === 'quick' ? 'Quick Quote' : 'New Quote'],
                 ['Quantity', quote.quantity?.toLocaleString()],
                 ['Material', quote.paper_material],
                 ['Finish', quote.color_finish],

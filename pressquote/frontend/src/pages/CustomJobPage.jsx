@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
 import {
@@ -22,7 +22,71 @@ const typeColors = {
   equipment: 'bg-slate-500/10 text-gray-900 border-slate-500/20',
 };
 
+function LineItemsHeader({ lineTotal, fmt, addLineItem }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="section-title text-base">Line Items</h2>
+      <div className="flex items-center gap-3">
+        <div className="text-xs text-gray-900 font-mono">
+          Subtotal: <span className="text-gray-900 font-semibold">{fmt(lineTotal)}</span>
+        </div>
+        <div className="relative" ref={ref}>
+          <button
+            onClick={() => setOpen(o => !o)}
+            className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-forest-700 hover:bg-forest-600 border border-forest-600 text-white transition-colors"
+          >
+            <Plus size={12} />
+            Add
+          </button>
+          {open && (
+            <div className="absolute right-0 top-full mt-1 w-40 bg-navy-800 border border-border rounded-lg shadow-lg z-10 py-1 overflow-hidden">
+              {LINE_TYPES.map(t => {
+                const Icon = t.icon;
+                return (
+                  <button
+                    key={t.value}
+                    onClick={() => { addLineItem(t.value); setOpen(false); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-navy-700 transition-colors text-left"
+                  >
+                    <Icon size={13} className={t.color} />
+                    <span className="text-gray-200">{t.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const DESCRIPTION_OPTIONS = {
+  labor: ['Press time', 'Setup', 'Bindery', 'Finishing', 'Cutting', 'Folding', 'Lamination', 'Packaging'],
+  design: ['Graphic design', 'Pre-press', 'Color correction', 'Layout', 'File preparation', 'Proofreading'],
+  equipment: ['Large format printer', 'Digital press', 'Offset press', 'Die cutter', 'Laminator', 'Folder', 'Cutter'],
+};
+
 function LineItemRow({ item, index, onChange, onRemove, materials, outsourcedItems }) {
+  const getDescriptionOptions = () => {
+    if (item.type === 'material') return materials.map(m => m.name).filter(Boolean);
+    if (item.type === 'outsourced') return outsourcedItems.map(i => i.item_name).filter(Boolean);
+    return DESCRIPTION_OPTIONS[item.type] || [];
+  };
+
+  const options = getDescriptionOptions();
+
   return (
     <div className="grid grid-cols-12 gap-2 items-start py-2 border-b border-border/40 last:border-0">
       <div className="col-span-12 sm:col-span-2">
@@ -35,13 +99,24 @@ function LineItemRow({ item, index, onChange, onRemove, materials, outsourcedIte
         </select>
       </div>
       <div className="col-span-12 sm:col-span-4">
-        <input
-          type="text"
-          value={item.description}
-          onChange={e => onChange(index, 'description', e.target.value)}
-          placeholder="Description..."
-          className="form-input text-xs py-1.5"
-        />
+        {options.length > 0 ? (
+          <select
+            value={item.description}
+            onChange={e => onChange(index, 'description', e.target.value)}
+            className="form-input text-xs py-1.5"
+          >
+            <option value="">Select...</option>
+            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
+        ) : (
+          <input
+            type="text"
+            value={item.description}
+            onChange={e => onChange(index, 'description', e.target.value)}
+            placeholder="Description..."
+            className="form-input text-xs py-1.5"
+          />
+        )}
       </div>
       <div className="col-span-4 sm:col-span-2">
         <input
@@ -107,7 +182,11 @@ export default function CustomJobPage() {
   };
 
   const updateLineItem = (index, field, value) => {
-    setLineItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+    setLineItems(prev => prev.map((item, i) => {
+      if (i !== index) return item;
+      if (field === 'type') return { ...item, type: value, description: '' };
+      return { ...item, [field]: value };
+    }));
   };
 
   const removeLineItem = (index) => {
@@ -190,7 +269,7 @@ export default function CustomJobPage() {
           <Wrench size={17} className="text-indigo-400" />
         </div>
         <div>
-          <h1 className="page-title">Custom Job</h1>
+          <h1 className="page-title">New Quote</h1>
           <p className="text-gray-900 text-xs">Complex work with full line-item control</p>
         </div>
       </div>
@@ -234,12 +313,7 @@ export default function CustomJobPage() {
 
           {/* Line Items */}
           <div className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="section-title text-base">Line Items</h2>
-              <div className="text-xs text-gray-900 font-mono">
-                Subtotal: <span className="text-gray-900 font-semibold">{fmt(lineTotal)}</span>
-              </div>
-            </div>
+            <LineItemsHeader lineTotal={lineTotal} fmt={fmt} addLineItem={addLineItem} />
 
             {/* Column headers */}
             <div className="hidden sm:grid grid-cols-12 gap-2 mb-1 px-0">
@@ -265,21 +339,8 @@ export default function CustomJobPage() {
             </div>
 
             {lineItems.length === 0 && (
-              <div className="text-center py-6 text-gray-900 text-sm">No line items yet. Add one below.</div>
+              <div className="text-center py-6 text-gray-900 text-sm">No line items yet. Click + Add to get started.</div>
             )}
-
-            {/* Add buttons */}
-            <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-border">
-              {LINE_TYPES.map(t => {
-                const Icon = t.icon;
-                return (
-                  <button key={t.value} onClick={() => addLineItem(t.value)} className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border transition-all hover:opacity-90 ${typeColors[t.value]}`}>
-                    <Icon size={11} />
-                    Add {t.label}
-                  </button>
-                );
-              })}
-            </div>
           </div>
         </div>
 

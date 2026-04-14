@@ -94,7 +94,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex-1">
               <div className="font-display font-semibold text-gray-900 text-base">
-                Custom Job
+                New Quote
               </div>
               <div className="text-gray-900 text-sm mt-0.5">
                 Complex work with line items
