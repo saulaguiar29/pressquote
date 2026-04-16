@@ -13,22 +13,22 @@ function createOAuthClient() {
   });
 }
 
-async function saveToken(key, value, company_id) {
+async function saveToken(key, value) {
   await pool.query(
-    'INSERT INTO integrations (key, value, company_id) VALUES ($1, $2, $3) ON CONFLICT (key, company_id) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()',
-    [key, String(value), company_id]
+    'INSERT INTO integrations (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()',
+    [key, String(value)]
   );
 }
 
-async function getTokens(company_id) {
-  const { rows } = await pool.query("SELECT key, value FROM integrations WHERE key LIKE 'qb_%' AND company_id = $1", [company_id]);
+async function getTokens() {
+  const { rows } = await pool.query("SELECT key, value FROM integrations WHERE key LIKE 'qb_%'");
   const t = {};
   rows.forEach(r => { t[r.key] = r.value; });
   return t;
 }
 
-async function getValidAccessToken(company_id) {
-  const t = await getTokens(company_id);
+async function getValidAccessToken() {
+  const t = await getTokens();
   if (!t.qb_access_token || !t.qb_realm_id) throw new Error('QuickBooks not connected');
 
   const expiry = parseInt(t.qb_token_expiry || '0');
@@ -42,9 +42,9 @@ async function getValidAccessToken(company_id) {
     });
     const refreshed = await oauthClient.refresh();
     const newToken = refreshed.getJson();
-    await saveToken('qb_access_token', newToken.access_token, company_id);
-    if (newToken.refresh_token) await saveToken('qb_refresh_token', newToken.refresh_token, company_id);
-    await saveToken('qb_token_expiry', String(Date.now() + (newToken.expires_in || 3600) * 1000), company_id);
+    await saveToken('qb_access_token', newToken.access_token);
+    if (newToken.refresh_token) await saveToken('qb_refresh_token', newToken.refresh_token);
+    await saveToken('qb_token_expiry', String(Date.now() + (newToken.expires_in || 3600) * 1000));
     return { accessToken: newToken.access_token, realmId: t.qb_realm_id };
   }
 
@@ -115,7 +115,7 @@ async function findOrCreateServiceItem(accessToken, realmId) {
 // GET /api/quickbooks/status
 router.get('/status', authMiddleware, async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT value FROM integrations WHERE key = 'qb_realm_id' AND company_id = $1", [req.user.company_id]);
+    const { rows } = await pool.query("SELECT value FROM integrations WHERE key = 'qb_realm_id'");
     res.json({ connected: !!rows[0]?.value });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -128,7 +128,7 @@ router.get('/auth-url', authMiddleware, (req, res) => {
     const oauthClient = createOAuthClient();
     const url = oauthClient.authorizeUri({
       scope: [OAuthClient.scopes.Accounting],
-      state: String(req.user.company_id),
+      state: 'pressquote',
     });
     console.log('QB Auth URL:', url);
     res.json({ url });
@@ -146,12 +146,11 @@ router.get('/callback', async (req, res) => {
     const authResponse = await oauthClient.createToken(fullUrl);
     const token = authResponse.getJson();
     const realmId = req.query.realmId;
-    const company_id = parseInt(req.query.state) || null;
 
-    await saveToken('qb_access_token', token.access_token, company_id);
-    await saveToken('qb_refresh_token', token.refresh_token, company_id);
-    await saveToken('qb_realm_id', realmId, company_id);
-    await saveToken('qb_token_expiry', String(Date.now() + (token.expires_in || 3600) * 1000), company_id);
+    await saveToken('qb_access_token', token.access_token);
+    await saveToken('qb_refresh_token', token.refresh_token);
+    await saveToken('qb_realm_id', realmId);
+    await saveToken('qb_token_expiry', String(Date.now() + (token.expires_in || 3600) * 1000));
 
     res.redirect(`${frontendUrl}/settings?qb=connected`);
   } catch (err) {
@@ -163,7 +162,7 @@ router.get('/callback', async (req, res) => {
 // DELETE /api/quickbooks/disconnect
 router.delete('/disconnect', authMiddleware, async (req, res) => {
   try {
-    await pool.query("DELETE FROM integrations WHERE key LIKE 'qb_%' AND company_id = $1", [req.user.company_id]);
+    await pool.query("DELETE FROM integrations WHERE key LIKE 'qb_%'");
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -173,13 +172,13 @@ router.delete('/disconnect', authMiddleware, async (req, res) => {
 // POST /api/quickbooks/export-invoice/:quoteId
 router.post('/export-invoice/:quoteId', authMiddleware, async (req, res) => {
   try {
-    const { accessToken, realmId } = await getValidAccessToken(req.user.company_id);
+    const { accessToken, realmId } = await getValidAccessToken();
 
     const { rows: quoteRows } = await pool.query(`
       SELECT q.*, c.email as customer_email
       FROM quotes q LEFT JOIN customers c ON c.id = q.customer_id
-      WHERE q.id = $1 AND q.company_id = $2
-    `, [req.params.quoteId, req.user.company_id]);
+      WHERE q.id = $1
+    `, [req.params.quoteId]);
     const quote = quoteRows[0];
     if (!quote) return res.status(404).json({ error: 'Quote not found' });
 
@@ -241,7 +240,7 @@ router.post('/export-invoice/:quoteId', authMiddleware, async (req, res) => {
 // POST /api/quickbooks/sync-customers
 router.post('/sync-customers', authMiddleware, async (req, res) => {
   try {
-    const { accessToken, realmId } = await getValidAccessToken(req.user.company_id);
+    const { accessToken, realmId } = await getValidAccessToken();
 
     const { QueryResponse } = await qbRequest('GET',
       `/query?query=${encodeURIComponent('SELECT * FROM Customer WHERE Active = true MAXRESULTS 100')}`,
@@ -257,13 +256,13 @@ router.post('/sync-customers', authMiddleware, async (req, res) => {
       const company = c.CompanyName || null;
 
       const { rows: existing } = await pool.query(
-        'SELECT id FROM customers WHERE email = $1 AND company_id = $2',
-        [email, req.user.company_id]
+        'SELECT id FROM customers WHERE email = $1',
+        [email]
       );
       if (!existing[0] && name) {
         await pool.query(
-          'INSERT INTO customers (name, email, phone, company, company_id) VALUES ($1, $2, $3, $4, $5)',
-          [name, email, phone, company, req.user.company_id]
+          'INSERT INTO customers (name, email, phone, company) VALUES ($1, $2, $3, $4)',
+          [name, email, phone, company]
         );
         imported++;
       }
