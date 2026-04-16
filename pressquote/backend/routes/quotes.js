@@ -6,18 +6,18 @@ const { calculateQuote } = require('../utils/pricingEngine');
 
 router.use(authMiddleware);
 
-async function getSettings() {
-  const { rows } = await pool.query('SELECT key, value FROM company_settings');
+async function getSettings(company_id) {
+  const { rows } = await pool.query('SELECT key, value FROM company_settings WHERE company_id = $1', [company_id]);
   const settings = {};
   rows.forEach(r => { settings[r.key] = r.value; });
   return settings;
 }
 
-async function generateQuoteNumber() {
+async function generateQuoteNumber(company_id) {
   const year = new Date().getFullYear();
   const { rows } = await pool.query(
-    "SELECT COUNT(*) as cnt FROM quotes WHERE quote_number LIKE $1",
-    [`PQ-${year}-%`]
+    "SELECT COUNT(*) as cnt FROM quotes WHERE quote_number LIKE $1 AND company_id = $2",
+    [`PQ-${year}-%`, company_id]
   );
   const num = String((parseInt(rows[0].cnt) || 0) + 1).padStart(4, '0');
   return `PQ-${year}-${num}`;
@@ -28,9 +28,9 @@ router.get('/', async (req, res) => {
   try {
     const { search, status, type, limit = 50, offset = 0 } = req.query;
 
-    let query = 'SELECT q.*, c.company as customer_company FROM quotes q LEFT JOIN customers c ON c.id = q.customer_id WHERE 1=1';
-    const params = [];
-    let paramIdx = 0;
+    let query = 'SELECT q.*, c.company as customer_company FROM quotes q LEFT JOIN customers c ON c.id = q.customer_id WHERE q.company_id = $1';
+    const params = [req.user.company_id];
+    let paramIdx = 1;
 
     if (search) {
       paramIdx++;
@@ -57,7 +57,7 @@ router.get('/', async (req, res) => {
     params.push(parseInt(offset));
 
     const { rows: quotes } = await pool.query(query, params);
-    const { rows: countRows } = await pool.query('SELECT COUNT(*) as cnt FROM quotes');
+    const { rows: countRows } = await pool.query('SELECT COUNT(*) as cnt FROM quotes WHERE company_id = $1', [req.user.company_id]);
     const total = parseInt(countRows[0].cnt) || 0;
     res.json({ quotes, total });
   } catch (err) {
@@ -69,16 +69,17 @@ router.get('/', async (req, res) => {
 // GET /api/quotes/stats
 router.get('/stats', async (req, res) => {
   try {
+    const cid = req.user.company_id;
     const today = new Date().toISOString().split('T')[0];
     const monthStart = today.slice(0, 7) + '-01';
 
     const [totalRes, monthRes, sentRes, revenueRes, marginRes, recentRes] = await Promise.all([
-      pool.query("SELECT COUNT(*) as cnt FROM quotes"),
-      pool.query("SELECT COUNT(*) as cnt FROM quotes WHERE created_at >= $1", [monthStart]),
-      pool.query("SELECT COUNT(*) as cnt FROM quotes WHERE status = 'sent'"),
-      pool.query("SELECT COALESCE(SUM(final_price), 0) as total FROM quotes WHERE status IN ('sent','accepted')"),
-      pool.query("SELECT AVG(margin_percent) as avg FROM quotes WHERE margin_percent > 0"),
-      pool.query("SELECT q.*, c.company as customer_company FROM quotes q LEFT JOIN customers c ON c.id = q.customer_id ORDER BY q.created_at DESC LIMIT 5"),
+      pool.query("SELECT COUNT(*) as cnt FROM quotes WHERE company_id = $1", [cid]),
+      pool.query("SELECT COUNT(*) as cnt FROM quotes WHERE company_id = $1 AND created_at >= $2", [cid, monthStart]),
+      pool.query("SELECT COUNT(*) as cnt FROM quotes WHERE company_id = $1 AND status = 'sent'", [cid]),
+      pool.query("SELECT COALESCE(SUM(final_price), 0) as total FROM quotes WHERE company_id = $1 AND status IN ('sent','accepted')", [cid]),
+      pool.query("SELECT AVG(margin_percent) as avg FROM quotes WHERE company_id = $1 AND margin_percent > 0", [cid]),
+      pool.query("SELECT q.*, c.company as customer_company FROM quotes q LEFT JOIN customers c ON c.id = q.customer_id WHERE q.company_id = $1 ORDER BY q.created_at DESC LIMIT 5", [cid]),
     ]);
 
     res.json({
@@ -102,8 +103,8 @@ router.get('/:id', async (req, res) => {
       SELECT q.*, c.email as customer_email, c.phone as customer_phone, c.company as customer_company
       FROM quotes q
       LEFT JOIN customers c ON c.id = q.customer_id
-      WHERE q.id = $1
-    `, [req.params.id]);
+      WHERE q.id = $1 AND q.company_id = $2
+    `, [req.params.id, req.user.company_id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     const { rows: lineItems } = await pool.query(
       'SELECT * FROM quote_line_items WHERE quote_id = $1 ORDER BY sort_order, id',
@@ -116,10 +117,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/quotes/calculate - calculate pricing without saving
+// POST /api/quotes/calculate
 router.post('/calculate', async (req, res) => {
   try {
-    const settings = await getSettings();
+    const settings = await getSettings(req.user.company_id);
     const { materialCost, laborHours, designHours, outsourcedCost, dueDate, complexityMultiplier } = req.body;
     const result = calculateQuote({ materialCost, laborHours, designHours, outsourcedCost, settings, dueDate, complexityMultiplier });
     res.json(result);
@@ -129,10 +130,10 @@ router.post('/calculate', async (req, res) => {
   }
 });
 
-// POST /api/quotes - create quote
+// POST /api/quotes
 router.post('/', async (req, res) => {
   try {
-    const settings = await getSettings();
+    const settings = await getSettings(req.user.company_id);
 
     const {
       customer_id, customer_name, project_name, type, product_template_id,
@@ -151,7 +152,7 @@ router.post('/', async (req, res) => {
       complexityMultiplier: parseFloat(complexityMultiplier || 1),
     });
 
-    const quoteNumber = await generateQuoteNumber();
+    const quoteNumber = await generateQuoteNumber(req.user.company_id);
 
     const { rows } = await pool.query(`
       INSERT INTO quotes (
@@ -159,8 +160,8 @@ router.post('/', async (req, res) => {
         product_template_id, quantity, paper_material, color_finish, due_date,
         days_until_due, rush_percent, material_cost, labor_cost, design_cost,
         outsourced_cost, overhead_cost, rush_fee, subtotal, final_price,
-        profit, margin_percent, notes, created_by
-      ) VALUES ($1,$2,$3,$4,$5,'draft',$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+        profit, margin_percent, notes, created_by, company_id
+      ) VALUES ($1,$2,$3,$4,$5,'draft',$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
       RETURNING id
     `, [
       quoteNumber, customer_id || null, customer_name, project_name, type || 'quick',
@@ -170,7 +171,7 @@ router.post('/', async (req, res) => {
       pricing.outsourcedCost, pricing.overheadCost, pricing.rushFee,
       pricing.subtotal, pricing.finalPrice,
       pricing.profit, pricing.marginPercent,
-      notes, req.user.id,
+      notes, req.user.id, req.user.company_id,
     ]);
 
     const quoteId = rows[0].id;
@@ -197,7 +198,7 @@ router.post('/', async (req, res) => {
 // PUT /api/quotes/:id
 router.put('/:id', async (req, res) => {
   try {
-    const settings = await getSettings();
+    const settings = await getSettings(req.user.company_id);
     const { id } = req.params;
 
     const {
@@ -225,7 +226,7 @@ router.put('/:id', async (req, res) => {
         outsourced_cost=$15, overhead_cost=$16, rush_fee=$17, subtotal=$18, final_price=$19,
         profit=$20, margin_percent=$21, notes=$22, status=$23, email_subject=$24, email_body=$25,
         updated_at=NOW()
-      WHERE id=$26
+      WHERE id=$26 AND company_id=$27
     `, [
       customer_id || null, customer_name, project_name, type,
       product_template_id || null, quantity, paper_material, color_finish, due_date,
@@ -234,7 +235,7 @@ router.put('/:id', async (req, res) => {
       pricing.outsourcedCost, pricing.overheadCost, pricing.rushFee,
       pricing.subtotal, pricing.finalPrice,
       pricing.profit, pricing.marginPercent,
-      notes, status || 'draft', email_subject, email_body, id,
+      notes, status || 'draft', email_subject, email_body, id, req.user.company_id,
     ]);
 
     if (lineItems !== undefined) {
@@ -261,7 +262,7 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    await pool.query('DELETE FROM quotes WHERE id = $1', [req.params.id]);
+    await pool.query('DELETE FROM quotes WHERE id = $1 AND company_id = $2', [req.params.id, req.user.company_id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);

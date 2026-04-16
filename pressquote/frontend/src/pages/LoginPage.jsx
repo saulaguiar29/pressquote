@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Printer, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
@@ -112,11 +112,14 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-xs text-gray-900 text-center">
-              Demo: admin@pressquote.com / password123
+          <div className="mt-4 pt-4 border-t border-border text-center">
+            <p className="text-sm text-gray-600">
+              New here?{" "}
+              <Link to="/signup" className="text-green-700 font-medium hover:underline">
+                Create your company account
+              </Link>
             </p>
-          </div> */}
+          </div>
         </div>
       </div>
     </div>

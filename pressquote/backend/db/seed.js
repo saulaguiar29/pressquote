@@ -5,13 +5,24 @@ const { createSchema } = require('./schema');
 
 async function seed() {
   await createSchema();
+  const { runMigrations } = require('./migrate');
+  await runMigrations();
+
+  // Company
+  const { rows: companyExists } = await pool.query("SELECT id FROM companies WHERE name = 'PrintCo'");
+  let companyId = companyExists[0]?.id;
+  if (!companyId) {
+    const { rows } = await pool.query("INSERT INTO companies (name) VALUES ('PrintCo') RETURNING id");
+    companyId = rows[0].id;
+    console.log('Company seeded');
+  }
 
   // Users
   const hash = await bcrypt.hash('password123', 10);
   const { rows: userExists } = await pool.query('SELECT id FROM users WHERE email = $1', ['admin@pressquote.com']);
   if (!userExists[0]) {
-    await pool.query('INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4)', ['admin@pressquote.com', hash, 'Admin User', 'admin']);
-    await pool.query('INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4)', ['staff@pressquote.com', hash, 'Staff User', 'staff']);
+    await pool.query('INSERT INTO users (email, password_hash, name, role, company_id) VALUES ($1, $2, $3, $4, $5)', ['admin@pressquote.com', hash, 'Admin User', 'admin', companyId]);
+    await pool.query('INSERT INTO users (email, password_hash, name, role, company_id) VALUES ($1, $2, $3, $4, $5)', ['staff@pressquote.com', hash, 'Staff User', 'staff', companyId]);
     console.log('Users seeded');
   }
 
@@ -30,19 +41,19 @@ async function seed() {
   ];
   for (const [key, value] of defaultSettings) {
     await pool.query(
-      'INSERT INTO company_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING',
-      [key, value]
+      'INSERT INTO company_settings (key, value, company_id) VALUES ($1, $2, $3) ON CONFLICT (key, company_id) DO NOTHING',
+      [key, value, companyId]
     );
   }
   console.log('Settings seeded');
 
   // Suppliers
-  const { rows: supplierExists } = await pool.query('SELECT id FROM suppliers WHERE name = $1', ['Neenah Paper']);
+  const { rows: supplierExists } = await pool.query('SELECT id FROM suppliers WHERE name = $1 AND company_id = $2', ['Neenah Paper', companyId]);
   let supplierId = supplierExists[0]?.id;
   if (!supplierExists[0]) {
     const { rows } = await pool.query(
-      'INSERT INTO suppliers (name, contact_email, contact_phone) VALUES ($1, $2, $3) RETURNING id',
-      ['Neenah Paper', 'orders@neenah.com', '800-558-5061']
+      'INSERT INTO suppliers (name, contact_email, contact_phone, company_id) VALUES ($1, $2, $3, $4) RETURNING id',
+      ['Neenah Paper', 'orders@neenah.com', '800-558-5061', companyId]
     );
     supplierId = rows[0].id;
   }
@@ -61,10 +72,13 @@ async function seed() {
     ['Saddle Stitch Wire', 'unit', 0.02, 'Bindery Supply Co', 5000, 500],
   ];
   for (const [name, unit_type, unit_cost, supplier, inventory_qty, reorder_point] of materials) {
-    await pool.query(
-      'INSERT INTO materials (name, unit_type, unit_cost, supplier, inventory_qty, reorder_point) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING',
-      [name, unit_type, unit_cost, supplier, inventory_qty, reorder_point]
-    );
+    const { rows: exists } = await pool.query('SELECT id FROM materials WHERE name = $1 AND company_id = $2', [name, companyId]);
+    if (!exists[0]) {
+      await pool.query(
+        'INSERT INTO materials (name, unit_type, unit_cost, supplier, inventory_qty, reorder_point, company_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [name, unit_type, unit_cost, supplier, inventory_qty, reorder_point, companyId]
+      );
+    }
   }
   console.log('Materials seeded');
 
@@ -82,11 +96,11 @@ async function seed() {
     { name: 'Vinyl Banner', category: 'Banners', setup_time: 0.5, run_time_per_unit: 0.1, finishing_time: 0.5, complexity_multiplier: 1.3, default_margin: 50 },
   ];
   for (const t of templates) {
-    const { rows: existing } = await pool.query('SELECT id FROM product_templates WHERE name = $1', [t.name]);
+    const { rows: existing } = await pool.query('SELECT id FROM product_templates WHERE name = $1 AND company_id = $2', [t.name, companyId]);
     if (!existing[0]) {
       await pool.query(
-        'INSERT INTO product_templates (name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [t.name, t.category, t.setup_time, t.run_time_per_unit, t.finishing_time, t.complexity_multiplier, t.default_margin]
+        'INSERT INTO product_templates (name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin, company_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+        [t.name, t.category, t.setup_time, t.run_time_per_unit, t.finishing_time, t.complexity_multiplier, t.default_margin, companyId]
       );
     }
   }
@@ -101,11 +115,11 @@ async function seed() {
     { supplier_name: 'Emboss Co', item_name: 'Embossing Setup', base_cost: 175, shipping_cost: 20, lead_time: 7 },
   ];
   for (const item of outsourcedItems) {
-    const { rows: existing } = await pool.query('SELECT id FROM outsourced_items WHERE item_name = $1', [item.item_name]);
+    const { rows: existing } = await pool.query('SELECT id FROM outsourced_items WHERE item_name = $1 AND company_id = $2', [item.item_name, companyId]);
     if (!existing[0]) {
       await pool.query(
-        'INSERT INTO outsourced_items (supplier_name, item_name, base_cost, shipping_cost, lead_time) VALUES ($1, $2, $3, $4, $5)',
-        [item.supplier_name, item.item_name, item.base_cost, item.shipping_cost, item.lead_time]
+        'INSERT INTO outsourced_items (supplier_name, item_name, base_cost, shipping_cost, lead_time, company_id) VALUES ($1, $2, $3, $4, $5, $6)',
+        [item.supplier_name, item.item_name, item.base_cost, item.shipping_cost, item.lead_time, companyId]
       );
     }
   }
@@ -120,10 +134,13 @@ async function seed() {
     { name: 'Amanda Torres', email: 'amanda@eventpros.com', phone: '555-678-9012', company: 'Event Pros' },
   ];
   for (const c of sampleCustomers) {
-    await pool.query(
-      'INSERT INTO customers (name, email, phone, company) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
-      [c.name, c.email, c.phone, c.company]
-    );
+    const { rows: exists } = await pool.query('SELECT id FROM customers WHERE email = $1 AND company_id = $2', [c.email, companyId]);
+    if (!exists[0]) {
+      await pool.query(
+        'INSERT INTO customers (name, email, phone, company, company_id) VALUES ($1, $2, $3, $4, $5)',
+        [c.name, c.email, c.phone, c.company, companyId]
+      );
+    }
   }
   console.log('Customers seeded');
 

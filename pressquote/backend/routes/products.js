@@ -7,7 +7,10 @@ router.use(authMiddleware);
 
 router.get('/', async (req, res) => {
   try {
-    const { rows: templates } = await pool.query('SELECT * FROM product_templates ORDER BY category, name');
+    const { rows: templates } = await pool.query(
+      'SELECT * FROM product_templates WHERE company_id = $1 ORDER BY category, name',
+      [req.user.company_id]
+    );
     const result = await Promise.all(templates.map(async t => {
       const { rows: materials } = await pool.query(`
         SELECT ptm.*, m.name as material_name, m.unit_type, m.unit_cost, m.supplier
@@ -26,7 +29,10 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM product_templates WHERE id = $1', [req.params.id]);
+    const { rows } = await pool.query(
+      'SELECT * FROM product_templates WHERE id = $1 AND company_id = $2',
+      [req.params.id, req.user.company_id]
+    );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     const { rows: materials } = await pool.query(`
       SELECT ptm.*, m.name as material_name, m.unit_type, m.unit_cost, m.supplier
@@ -47,8 +53,8 @@ router.post('/', async (req, res) => {
     if (!name) return res.status(400).json({ error: 'Name required' });
 
     const { rows } = await pool.query(
-      'INSERT INTO product_templates (name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
-      [name, category, setup_time || 0, run_time_per_unit || 0, finishing_time || 0, complexity_multiplier || 1.0, default_margin || 40, description]
+      'INSERT INTO product_templates (name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin, description, company_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+      [name, category, setup_time || 0, run_time_per_unit || 0, finishing_time || 0, complexity_multiplier || 1.0, default_margin || 40, description, req.user.company_id]
     );
     const templateId = rows[0].id;
 
@@ -74,8 +80,8 @@ router.put('/:id', async (req, res) => {
     const { name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin, description, materials } = req.body;
 
     await pool.query(
-      'UPDATE product_templates SET name=$1, category=$2, setup_time=$3, run_time_per_unit=$4, finishing_time=$5, complexity_multiplier=$6, default_margin=$7, description=$8, updated_at=NOW() WHERE id=$9',
-      [name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin, description, req.params.id]
+      'UPDATE product_templates SET name=$1, category=$2, setup_time=$3, run_time_per_unit=$4, finishing_time=$5, complexity_multiplier=$6, default_margin=$7, description=$8, updated_at=NOW() WHERE id=$9 AND company_id=$10',
+      [name, category, setup_time, run_time_per_unit, finishing_time, complexity_multiplier, default_margin, description, req.params.id, req.user.company_id]
     );
 
     if (materials !== undefined) {
@@ -100,7 +106,7 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    await pool.query('DELETE FROM product_templates WHERE id = $1', [req.params.id]);
+    await pool.query('DELETE FROM product_templates WHERE id = $1 AND company_id = $2', [req.params.id, req.user.company_id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
