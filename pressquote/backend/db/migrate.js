@@ -6,7 +6,7 @@ async function runMigrations() {
     await client.query('BEGIN');
 
     // Add company_id to all tenant-scoped tables
-    const tables = ['users', 'company_settings', 'customers', 'quotes', 'materials', 'product_templates', 'suppliers', 'outsourced_items'];
+    const tables = ['users', 'company_settings', 'customers', 'quotes', 'materials', 'product_templates', 'suppliers', 'outsourced_items', 'integrations'];
     for (const table of tables) {
       await client.query(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS company_id INTEGER REFERENCES companies(id)`);
     }
@@ -17,6 +17,16 @@ async function runMigrations() {
       DO $$ BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'company_settings_key_company_id_key') THEN
           ALTER TABLE company_settings ADD CONSTRAINT company_settings_key_company_id_key UNIQUE (key, company_id);
+        END IF;
+      END $$
+    `);
+
+    // Fix integrations unique constraint to be (key, company_id)
+    await client.query(`ALTER TABLE integrations DROP CONSTRAINT IF EXISTS integrations_key_key`);
+    await client.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'integrations_key_company_id_key') THEN
+          ALTER TABLE integrations ADD CONSTRAINT integrations_key_company_id_key UNIQUE (key, company_id);
         END IF;
       END $$
     `);
