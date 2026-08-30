@@ -15,13 +15,14 @@ export default function ProductsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     api.getProducts().then(setProducts).finally(() => setLoading(false));
   }, []);
 
-  const openCreate = () => { setEditing(null); setForm(EMPTY); setError(''); setModalOpen(true); };
-  const openEdit = (p) => { setEditing(p); setForm({ ...p }); setError(''); setModalOpen(true); };
+  const openCreate = () => { setEditing(null); setForm(EMPTY); setError(''); setShowAdvanced(false); setModalOpen(true); };
+  const openEdit = (p) => { setEditing(p); setForm({ ...p }); setError(''); setShowAdvanced(true); setModalOpen(true); };
 
   const handleSave = async () => {
     if (!form.name) { setError('Name required'); return; }
@@ -193,27 +194,42 @@ export default function ProductsPage() {
             <label className="form-label">Default Margin (%)</label>
             <input type="number" value={form.default_margin} onChange={e => setForm(f => ({ ...f, default_margin: parseFloat(e.target.value) || 40 }))} min={0} max={90} className="form-input" />
           </div>
-          <div className="form-group">
-            <label className="form-label">Setup Time (hours)</label>
-            <input type="number" value={form.setup_time} onChange={e => setForm(f => ({ ...f, setup_time: parseFloat(e.target.value) || 0 }))} min={0} step={0.25} className="form-input" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Run Time Per Unit (hours)</label>
-            <input type="number" value={form.run_time_per_unit} onChange={e => setForm(f => ({ ...f, run_time_per_unit: parseFloat(e.target.value) || 0 }))} min={0} step={0.0001} className="form-input" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Finishing Time (hours)</label>
-            <input type="number" value={form.finishing_time} onChange={e => setForm(f => ({ ...f, finishing_time: parseFloat(e.target.value) || 0 }))} min={0} step={0.25} className="form-input" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Complexity Multiplier</label>
-            <input type="number" value={form.complexity_multiplier} onChange={e => setForm(f => ({ ...f, complexity_multiplier: parseFloat(e.target.value) || 1 }))} min={1} max={5} step={0.1} className="form-input" />
-          </div>
-          <div className="form-group col-span-2">
-            <label className="form-label">Description</label>
-            <textarea value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="form-input resize-none" placeholder="Optional description..." />
-          </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(a => !a)}
+          className="btn-ghost text-xs mt-4 px-0"
+        >
+          {showAdvanced ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+          {showAdvanced ? 'Hide advanced options' : 'Show advanced options (timing, complexity, description)'}
+        </button>
+
+        {showAdvanced && (
+          <div className="grid grid-cols-2 gap-4 mt-3">
+            <div className="form-group">
+              <label className="form-label">Setup Time (hours)</label>
+              <input type="number" value={form.setup_time} onChange={e => setForm(f => ({ ...f, setup_time: parseFloat(e.target.value) || 0 }))} min={0} step={0.25} className="form-input" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Run Time Per Unit (hours)</label>
+              <input type="number" value={form.run_time_per_unit} onChange={e => setForm(f => ({ ...f, run_time_per_unit: parseFloat(e.target.value) || 0 }))} min={0} step={0.0001} className="form-input" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Finishing Time (hours)</label>
+              <input type="number" value={form.finishing_time} onChange={e => setForm(f => ({ ...f, finishing_time: parseFloat(e.target.value) || 0 }))} min={0} step={0.25} className="form-input" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Complexity Multiplier</label>
+              <input type="number" value={form.complexity_multiplier} onChange={e => setForm(f => ({ ...f, complexity_multiplier: parseFloat(e.target.value) || 1 }))} min={1} max={5} step={0.1} className="form-input" />
+            </div>
+            <div className="form-group col-span-2">
+              <label className="form-label">Description</label>
+              <textarea value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="form-input resize-none" placeholder="Optional description..." />
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalOpen(false)} className="btn-secondary">Cancel</button>
           <button onClick={handleSave} disabled={saving} className="btn-primary">

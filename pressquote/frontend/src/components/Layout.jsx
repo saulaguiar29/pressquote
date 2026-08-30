@@ -36,7 +36,11 @@ export default function Layout() {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-4 py-5 border-b border-forest-800">
-        <div className="flex items-center gap-2.5">
+        <button
+          onClick={() => { navigate('/'); setMobileOpen(false); }}
+          className="flex items-center gap-2.5 w-full text-left hover:opacity-80 transition-opacity"
+          title="Go to Dashboard"
+        >
           <div className="w-8 h-8 bg-forest-500 rounded-lg flex items-center justify-center shadow-glow-sm">
             <Printer size={16} className="text-white" />
           </div>
@@ -44,7 +48,7 @@ export default function Layout() {
             <div className="font-display font-bold text-white text-base leading-none">PressQuote</div>
             <div className="text-forest-300 text-xs mt-0.5">Print Shop Quoting</div>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Quick action */}
@@ -121,12 +125,16 @@ export default function Layout() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-forest-900 border-b border-forest-800">
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            title="Go to Dashboard"
+          >
             <div className="w-6 h-6 bg-forest-500 rounded flex items-center justify-center">
               <Printer size={12} className="text-white" />
             </div>
             <span className="font-display font-bold text-white text-sm">PressQuote</span>
-          </div>
+          </button>
           <button onClick={() => setMobileOpen(!mobileOpen)} className="text-forest-300 hover:text-white p-1">
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
