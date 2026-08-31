@@ -31,6 +31,21 @@ async function runMigrations() {
       END $$
     `);
 
+    // Enable Row Level Security on every public table. Supabase auto-exposes public
+    // tables over its PostgREST API to the `anon`/`authenticated` roles; without RLS,
+    // that API can read/write any company's data with no login. We add no policies
+    // here (default-deny for those roles) since this app's own DB connection uses the
+    // `postgres` role, which has BYPASSRLS and is unaffected. All authorization for the
+    // app itself continues to happen in Express middleware (see middleware/auth.js).
+    const allTables = [
+      'companies', 'users', 'company_settings', 'customers', 'suppliers', 'materials',
+      'outsourced_items', 'product_templates', 'product_template_materials',
+      'quotes', 'quote_line_items', 'integrations',
+    ];
+    for (const table of allTables) {
+      await client.query(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`);
+    }
+
     await client.query('COMMIT');
     console.log('Migrations applied successfully');
   } catch (err) {
