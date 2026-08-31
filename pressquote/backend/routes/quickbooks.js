@@ -125,6 +125,9 @@ router.get('/status', authMiddleware, async (req, res) => {
 // GET /api/quickbooks/auth-url
 router.get('/auth-url', authMiddleware, (req, res) => {
   try {
+    if (!req.user.company_id) {
+      return res.status(400).json({ error: 'Your account is not linked to a company. Contact an admin.' });
+    }
     const oauthClient = createOAuthClient();
     const url = oauthClient.authorizeUri({
       scope: [OAuthClient.scopes.Accounting],
@@ -146,7 +149,11 @@ router.get('/callback', async (req, res) => {
     const authResponse = await oauthClient.createToken(fullUrl);
     const token = authResponse.getJson();
     const realmId = req.query.realmId;
-    const company_id = parseInt(req.query.state) || null;
+    const company_id = parseInt(req.query.state, 10);
+    if (!realmId || !company_id) {
+      console.error('QB callback: missing/invalid realmId or state (company_id)', { realmId, state: req.query.state });
+      return res.redirect(`${frontendUrl}/settings?qb=error`);
+    }
 
     await saveToken('qb_access_token', token.access_token, company_id);
     await saveToken('qb_refresh_token', token.refresh_token, company_id);
