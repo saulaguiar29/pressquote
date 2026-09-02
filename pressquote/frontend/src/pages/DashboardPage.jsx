@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import OnboardingChecklist from "../components/OnboardingChecklist";
 import {
   FileText,
   TrendingUp,
@@ -58,6 +59,8 @@ export default function DashboardPage() {
           Here's what's happening with your quotes today.
         </p>
       </div>
+
+      <OnboardingChecklist />
 
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
